@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: go-streaming-api
+  namespace: default
+  labels:
+    app: go-streaming-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: go-streaming-api
+  template:
+    metadata:
+      labels:
+        app: go-streaming-api
+    spec:
+      containers:
+        - name: go-streaming-api
+          image: gcr.io/quant-edge-213907/equix/service/go-streaming:23.0203.1324_89699fb
+          ports:
+            - containerPort: 80
+          volumeMounts:
+          - mountPath: /app/config
+            name: config-go-streaming-api
+      imagePullSecrets:
+        - name: gcr-json-key
+      volumes:
+        - name: config-go-streaming-api
+          configMap:
+            name: config-go-streaming-api
+            items:
+              - key: config
+                path: streaming-api.json
+      # [END volumes]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-go-streaming-api
+  namespace: default
+  labels:
+    app: go-streaming-api
+spec:
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: 80
+  selector:
+    app: go-streaming-api
+  type: NodePort
+---
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: go-streaming-api
+  namespace: default
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: go-streaming-api
+  minReplicas: 1
+  maxReplicas: 30
+  targetCPUUtilizationPercentage: 70
+
