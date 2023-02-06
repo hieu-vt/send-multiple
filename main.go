@@ -39,20 +39,18 @@ func main() {
 		Password: config.Redis.Password,                       // Password
 		DB:       config.Redis.Database,                       // Database
 	})
-	pubsub := rdb.PSubscribe(context.Background(), "*") // Subscribe all channel in redis pubsub
+	subscribeRedis := rdb.PSubscribe(context.Background(), "*") // Subscribe all channel in redis pubsub
 	go func() {
 		// Get message from redis pub/sub
-		for msg := range pubsub.Channel() {
-			go utils.SendData(channelManager, msg) // send data to sse
+		for msg := range subscribeRedis.Channel() { // Listen redis pubsub
+			go utils.SendData(channelManager, msg) // Send data to sse
 		}
 	}()
 	go func() {
 		// Heartbeat
-		ticker := time.Tick(time.Duration(10000 * time.Millisecond))
-		i := 0
+		ticker := time.Tick(time.Duration(10000 * time.Millisecond)) // Interval 10s send heartbeat
 		for {
 			<-ticker
-			i++
 			go utils.SendPing(channelManager, sseInstanceId, rdb) // Send heartbeat
 		}
 	}()
