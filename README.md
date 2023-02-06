@@ -33,6 +33,22 @@ Library:
 # MODEL
 [PROCESSING] -> [REDIS PUB/SUB] -> [STREAMING] -> [CLIENT]
 
+# REDIS
+- Should separate redis to improve performance
+- Config like: 
+```
+{
+    "port": "8080",
+    "redis": {
+        "host": "localhost",
+        "port": "6379",
+        "db": "15",
+        "password": "password"
+    },
+    "hook": ""
+}
+```
+
 # INFO
 - / : Get service info
 - /admin : Get sse service info
