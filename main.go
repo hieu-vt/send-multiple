@@ -30,22 +30,18 @@ var upgrader = websocket.Upgrader{
 }
 
 func main() {
-	gin.SetMode(gin.ReleaseMode)
-
-	gin.DebugPrintRouteFunc = func(httpMethod, absolutePath, handlerName string, nuHandlers int) {
-		log.Printf("endpoint %v %v %v %v\n", httpMethod, absolutePath, handlerName, nuHandlers)
-	}
-	config, _ := utils.LoadConfiguration("config/streaming-api.json")
+	gin.SetMode(gin.ReleaseMode)                                      // Set release mode
+	config, _ := utils.LoadConfiguration("config/streaming-api.json") // Get config streaming
 	fmt.Println(config.Redis.Host)
-	hook = config.Hook                         // get hook config
+	hook = config.Hook                         // Get hook config
 	channelManager = model.NewChannelManager() // Init channel manager
 	// Config redis
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     config.Redis.Host + ":" + config.Redis.Port, // Address or redis
+		Addr:     config.Redis.Host + ":" + config.Redis.Port, // Address or redis. Should separate redis to improve performance
 		Password: config.Redis.Password,                       // Password
 		DB:       config.Redis.Database,                       // Database
 	})
-	pubsub := rdb.PSubscribe(context.Background(), "*")
+	pubsub := rdb.PSubscribe(context.Background(), "*") // Subscribe all channel in redis pubsub
 	go func() {
 		// Get message from redis pub/sub
 		for msg := range pubsub.Channel() {
@@ -62,19 +58,38 @@ func main() {
 			go utils.SendPing(channelManager, sseInstanceId, rdb) // Send heartbeat
 		}
 	}()
-	router := gin.Default()
+	router := gin.New() // Init GIN rounter
+	router.SetTrustedProxies([]string{"0.0.0.0/0", "::/1"})
+	// Custom Logger
+	router.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
+		return fmt.Sprintf("%s |%s %d %s| %s |%s %s %s %s | %s | %s | %s\n",
+			param.TimeStamp.Format(time.RFC1123),
+			param.StatusCodeColor(),
+			param.StatusCode,
+			param.ResetColor(),
+			param.ClientIP,
+			param.MethodColor(),
+			param.Method,
+			param.ResetColor(),
+			param.Path,
+			param.Latency,
+			param.Request.UserAgent(),
+			param.ErrorMessage,
+		)
+	}))
 	router.GET("/streaming/:path/:channel", stream)      // sse streaming
 	router.GET("/ws-streaming/:path/:channel", wsStream) // websocket streaming
 	router.GET("/admin", sseAdmin)                       // admin streaming
 	router.GET("/", home)                                // home
+	fmt.Println("listen port: " + config.Port)
 	router.Run(":" + config.Port)
 }
 
 func stream(c *gin.Context) {
-	channelId := c.Param("channel")
-	path := c.Param("path")
-	go utils.HookUrl(hook, c)
-	sseId := uuid.New()
+	channelId := c.Param("channel") // Get channel
+	path := c.Param("path")         // Get path
+	go utils.HookUrl(hook, c)       // hook url if have config
+	sseId := uuid.New()             // ID of sse connection
 	log.Println("CONNECT SSE |", sseId, "|", path+"/"+channelId)
 	channelManager.SseTotal += 1
 	channelManager.SseLive += 1
@@ -83,16 +98,16 @@ func stream(c *gin.Context) {
 	// Wait for close
 	defer channelManager.CloseListener(path, channelId, listener)
 	clientGone := c.Request.Context().Done()
-	// keep connection
+	// Keep connection
 	c.Stream(func(w io.Writer) bool {
 		select {
-		case <-clientGone:
+		case <-clientGone: // Close connection
 			log.Println("DISCONECT SSE |", sseId, "|", path+"/"+channelId)
 			channelManager.SseClosed += 1
 			channelManager.SseLive -= 1
 			go utils.HookUrl(hook, c)
 			return false
-		case message := <-listener:
+		case message := <-listener: // Send message
 			c.SSEvent("", message)
 			return true
 		}
@@ -107,9 +122,9 @@ func wsStream(c *gin.Context) {
 		return
 	}
 	defer ws.Close()
-	channelId := c.Param("channel")
-	path := c.Param("path")
-	sseId := uuid.New()
+	channelId := c.Param("channel") // Get channel
+	path := c.Param("path")         // Get path
+	sseId := uuid.New()             // ID of sse connection
 	log.Println("CONNECT WS |", sseId, "|", path+"/"+channelId)
 	channelManager.WsTotal += 1
 	channelManager.WsLive += 1
@@ -117,10 +132,10 @@ func wsStream(c *gin.Context) {
 	listener := channelManager.OpenListener(path, channelId)
 	// Wait for close
 	defer channelManager.CloseListener(path, channelId, listener)
-	// keep connection
+	// Keep connection
 	for {
-		message := <-listener
-		wsRes := fmt.Sprintf("%b", message)
+		message := <-listener               // Get message
+		wsRes := fmt.Sprintf("%b", message) // Write data
 		err = ws.WriteMessage(1, []byte(wsRes))
 		if err != nil {
 			log.Println("write:", err)
@@ -142,13 +157,13 @@ func sseAdmin(c *gin.Context) {
 	// Wait for close
 	defer channelManager.CloseListener(path, channelId, listener)
 	clientGone := c.Request.Context().Done()
-	// keep connection
+	// Keep connection
 	c.Stream(func(w io.Writer) bool {
 		select {
-		case <-clientGone:
+		case <-clientGone: // Close connection
 			log.Println("DISCONECT SSE |", sseId, "|", path+"/"+channelId)
 			return false
-		case message := <-listener:
+		case message := <-listener: // Send message
 			c.SSEvent("", message)
 			return true
 		}
@@ -156,6 +171,8 @@ func sseAdmin(c *gin.Context) {
 }
 
 func home(c *gin.Context) {
+	a := c.ClientIP()
+	log.Println(a)
 	c.JSON(http.StatusOK, gin.H{
 		"Server-Id":  sseInstanceId,               // server uuid
 		"SSE-Total":  channelManager.SseTotal,     // count SSE connections
