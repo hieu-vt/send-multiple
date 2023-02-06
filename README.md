@@ -33,7 +33,13 @@ Library:
 [PROCESSING] -> [REDIS PUB/SUB] -> [STREAMING] -> [CLIENT]
 
 # CONFIG
-- Config like: 
+- port: port streaming service listener
+- redis: config redis pubsub
+    - host: Host redis
+    - port: Port redis
+    - db: Database
+    - password: Password
+
 ```
 {
     "port": "8080",
@@ -42,8 +48,7 @@ Library:
         "port": "6379",
         "db": "15",
         "password": "password"
-    },
-    "hook": ""
+    }
 }
 ```
 
@@ -53,13 +58,15 @@ Library:
 
 # SSE STREAMING
 - /streaming/:path/:channel : get sse streaming by path and channel
-- /streaming/price/anz.asx,bhp.asx -> recieve all pub/sub to redis like price:anz.asx and price:bhp.asx
-- /streaming/account/anz.asx,bhp.asx -> recieve all pub/sub to redis like account:anz.asx and account:bhp.asx
+- Example:
+    - /streaming/price/anz.asx,bhp.asx -> recieve data from redis pub/sub: price:anz.asx and price:bhp.asx
+    - /streaming/account/anz.asx,bhp.asx -> recieve data from redis pub/sub: account:anz.asx and account:bhp.asx
 
 # WS STREAMING
 - /ws-streaming/:path/:channel : get sse streaming by path and channel
-- /ws-streaming/price/anz.asx,bhp.asx -> recieve all pub/sub to redis like price:anz.asx and price:bhp.asx
-- /ws-streaming/account/anz.asx,bhp.asx -> recieve all pub/sub to redis like account:anz.asx and account:bhp.asx
+- Example:
+    - /ws-streaming/price/anz.asx,bhp.asx -> recieve data from redis pub/sub: price:anz.asx and price:bhp.asx
+    - /ws-streaming/account/anz.asx,bhp.asx -> recieve data from redis pub/sub: account:anz.asx  and account:bhp.asx
 
 
 # TESTING

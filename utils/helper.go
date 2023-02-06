@@ -5,11 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"go-streaming/model"
-	"log"
 	"os"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 )
 
@@ -35,10 +33,4 @@ func SendPing(channelManager *model.ChannelManager, sseInstanceId string, rdb *r
 		str := fmt.Sprintf("%s, SSE-Total:%d, SSE-Live:%d, SSE-Closed:%d, WS-Total:%d, WS-Live:%d, WS-Closed:%d, Messages:%d", sseInstanceId, channelManager.SseTotal, channelManager.SseLive, channelManager.SseClosed, channelManager.WsTotal, channelManager.WsLive, channelManager.WsClosed, channelManager.TotalMessage)
 		rdb.Publish(context.Background(), "sse:admin", str).Err()
 	}()
-}
-
-func HookUrl(hook string, c *gin.Context) {
-	if hook != "" {
-		log.Printf("Hook to url: " + hook)
-	}
 }

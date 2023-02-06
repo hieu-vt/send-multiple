@@ -8,5 +8,4 @@ type Config struct {
 		Database int    `json:"db"`
 	} `json:"redis"`
 	Port string `json:"port"`
-	Hook string `json:"hook"`
 }

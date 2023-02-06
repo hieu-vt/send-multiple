@@ -16,7 +16,6 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-var hook string                                // hook url
 var sseInstanceId string = uuid.New().String() // uuid of see service
 var channelManager *model.ChannelManager       // channel manager
 
@@ -33,7 +32,6 @@ func main() {
 	gin.SetMode(gin.ReleaseMode)                                      // Set release mode
 	config, _ := utils.LoadConfiguration("config/streaming-api.json") // Get config streaming
 	fmt.Println(config.Redis.Host)
-	hook = config.Hook                         // Get hook config
 	channelManager = model.NewChannelManager() // Init channel manager
 	// Config redis
 	rdb := redis.NewClient(&redis.Options{
@@ -87,7 +85,6 @@ func main() {
 func stream(c *gin.Context) {
 	channelId := c.Param("channel") // Get channel
 	path := c.Param("path")         // Get path
-	go utils.HookUrl(hook, c)       // hook url if have config
 	sseId := uuid.New()             // ID of sse connection
 	log.Println("CONNECT SSE |", sseId, "|", path+"/"+channelId)
 	channelManager.SseTotal += 1
@@ -104,7 +101,6 @@ func stream(c *gin.Context) {
 			log.Println("DISCONECT SSE |", sseId, "|", path+"/"+channelId)
 			channelManager.SseClosed += 1
 			channelManager.SseLive -= 1
-			go utils.HookUrl(hook, c)
 			return false
 		case message := <-listener: // Send message
 			c.SSEvent("", message)
