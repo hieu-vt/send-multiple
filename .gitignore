@@ -22,3 +22,4 @@ yarn.lock
 uploads/
 dist/
 logs/
+__debug_bin

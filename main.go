@@ -59,7 +59,6 @@ func main() {
 		}
 	}()
 	router := gin.New() // Init GIN rounter
-	router.SetTrustedProxies([]string{"0.0.0.0/0", "::/1"})
 	// Custom Logger
 	router.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
 		return fmt.Sprintf("%s |%s %d %s| %s |%s %s %s %s | %s | %s | %s\n",
