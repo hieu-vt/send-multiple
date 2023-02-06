@@ -1,14 +1,13 @@
 # GO STREAMING
-Recieve data from Redis Pub/sub, then push data to client.
-
-Support SSE or WEBSOCKET
+- Recieve data from Redis Pub/sub, then push data to client.
+- Should separate redis to improve performance
+- Support SSE and WEBSOCKET
 
 Library:
 - gin: https://github.com/gin-gonic/gin
 - redis pub/sub: https://github.com/go-redis/redis/v8
 - websocket: https://github.com/gorilla/websocket
 - broadcast: https://github.com/dustin/go-broadcast
-
 
 # STRUCTOR
 ```
@@ -33,8 +32,7 @@ Library:
 # MODEL
 [PROCESSING] -> [REDIS PUB/SUB] -> [STREAMING] -> [CLIENT]
 
-# REDIS
-- Should separate redis to improve performance
+# CONFIG
 - Config like: 
 ```
 {
@@ -65,15 +63,16 @@ Library:
 
 
 # TESTING
-Install package wscat
+- Install package wscat
 ```
 npm install -g wscat
 ```
-Run on terminal
+- Run Websocket on terminal
 ```
 wscat -c wss://localhost:8080/ws-streaming/price/anz.asx,bhp.asx
 ```
 
+- Run Curl SSE on terminal 
 ```
 curl http://localhost:8080/streaming/price/anz.asx,bhp.asx
 ```
