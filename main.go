@@ -43,7 +43,11 @@ func main() {
 		Password: config.Redis.Password,                       // Password
 		DB:       config.Redis.Database,                       // Database
 	})
-	subscribeRedis := rdb.PSubscribe(context.Background(), fmt.Sprintf("%s:*", prefix)) // Subscribe all channel in redis pubsub
+	channel := "*"
+	if len(prefix) > 0 {
+		channel = fmt.Sprintf("%s:*", prefix)
+	}
+	subscribeRedis := rdb.PSubscribe(context.Background(), channel) // Subscribe all channel in redis pubsub
 	go func() {
 		// Get message from redis pub/sub
 		for msg := range subscribeRedis.Channel() { // Listen redis pubsub
