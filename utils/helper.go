@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"go-streaming/model"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/go-redis/redis/v8"
@@ -23,8 +24,12 @@ func LoadConfiguration(file string) (model.Config, error) {
 	return config, err
 }
 
-func SendData(channelManager *model.ChannelManager, msg *redis.Message) {
-	channelManager.Submit(msg.Channel, msg.Payload)
+func SendData(channelManager *model.ChannelManager, msg *redis.Message, prefix string) {
+	channel := msg.Channel
+	if len(prefix) != 0 {
+		channel = strings.Replace(msg.Channel, fmt.Sprintf("%s:", prefix), "", 1)
+	}
+	channelManager.Submit(channel, msg.Payload)
 }
 
 func SendPing(channelManager *model.ChannelManager, sseInstanceId string, rdb *redis.Client) {

@@ -47,7 +47,7 @@ func main() {
 	go func() {
 		// Get message from redis pub/sub
 		for msg := range subscribeRedis.Channel() { // Listen redis pubsub
-			go utils.SendData(channelManager, msg) // Send data to sse
+			go utils.SendData(channelManager, msg, prefix) // Send data to sse
 		}
 	}()
 	go func() {
