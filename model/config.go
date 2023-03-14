@@ -7,5 +7,6 @@ type Config struct {
 		Port     string `json:"port"`
 		Database int    `json:"db"`
 	} `json:"redis"`
-	Port string `json:"port"`
+	Port          string `json:"port"`
+	PrefixChannel string `json:"prefix_channel"`
 }

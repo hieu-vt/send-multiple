@@ -29,17 +29,21 @@ var upgrader = websocket.Upgrader{
 }
 
 func main() {
+	log.SetPrefix("GO-STREAMING: ")
+	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+
 	gin.SetMode(gin.ReleaseMode)                                      // Set release mode
 	config, _ := utils.LoadConfiguration("config/streaming-api.json") // Get config streaming
-	fmt.Println(config.Redis.Host)
+	log.Printf(config.Redis.Host)
 	channelManager = model.NewChannelManager() // Init channel manager
+	prefix := config.PrefixChannel
 	// Config redis
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     config.Redis.Host + ":" + config.Redis.Port, // Address or redis. Should separate redis to improve performance
 		Password: config.Redis.Password,                       // Password
 		DB:       config.Redis.Database,                       // Database
 	})
-	subscribeRedis := rdb.PSubscribe(context.Background(), "*") // Subscribe all channel in redis pubsub
+	subscribeRedis := rdb.PSubscribe(context.Background(), fmt.Sprintf("%s:*", prefix)) // Subscribe all channel in redis pubsub
 	go func() {
 		// Get message from redis pub/sub
 		for msg := range subscribeRedis.Channel() { // Listen redis pubsub
@@ -76,7 +80,7 @@ func main() {
 	router.GET("/ws-streaming/:path/:channel", wsStream) // websocket streaming
 	router.GET("/admin", sseAdmin)                       // admin streaming
 	router.GET("/", home)                                // home
-	fmt.Println("listen port: " + config.Port)
+	log.Printf("listen port: %s", config.Port)
 	router.Run(":" + config.Port)
 }
 
@@ -84,7 +88,7 @@ func stream(c *gin.Context) {
 	channelId := c.Param("channel") // Get channel
 	path := c.Param("path")         // Get path
 	sseId := uuid.New()             // ID of sse connection
-	log.Println("CONNECT SSE |", sseId, "|", path+"/"+channelId)
+	log.Printf("CONNECT SSE | %s | %s/%s", sseId, path, channelId)
 	channelManager.SseTotal += 1
 	channelManager.SseLive += 1
 	// Create new listener
@@ -96,7 +100,7 @@ func stream(c *gin.Context) {
 	c.Stream(func(w io.Writer) bool {
 		select {
 		case <-clientGone: // Close connection
-			log.Println("DISCONECT SSE |", sseId, "|", path+"/"+channelId)
+			log.Printf("DISCONNECT SSE | %s | %s/%s", sseId, path, channelId)
 			channelManager.SseClosed += 1
 			channelManager.SseLive -= 1
 			return false
@@ -111,14 +115,14 @@ func wsStream(c *gin.Context) {
 	w, r := c.Writer, c.Request
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Println("upgrade:", err)
+		log.Printf("Err: %v", err)
 		return
 	}
 	defer ws.Close()
 	channelId := c.Param("channel") // Get channel
 	path := c.Param("path")         // Get path
 	sseId := uuid.New()             // ID of sse connection
-	log.Println("CONNECT WS |", sseId, "|", path+"/"+channelId)
+	log.Printf("CONNECT WEBSOCKET | %s | %s/%s", sseId, path, channelId)
 	channelManager.WsTotal += 1
 	channelManager.WsLive += 1
 	// Create new listener
@@ -131,11 +135,11 @@ func wsStream(c *gin.Context) {
 		wsRes := fmt.Sprintf("%b", message) // Write data
 		err = ws.WriteMessage(1, []byte(wsRes))
 		if err != nil {
-			log.Println("write:", err)
+			log.Printf("Write: %v", err)
 			break
 		}
 	}
-	log.Println("DISCONECT WS |", sseId, "|", path+"/"+channelId)
+	log.Printf("DISCONNECT WEBSOCKET | %s | %s/%s", sseId, path, channelId)
 	channelManager.WsClosed += 1
 	channelManager.WsLive -= 1
 }
@@ -144,7 +148,7 @@ func sseAdmin(c *gin.Context) {
 	channelId := "admin"
 	path := "sse"
 	sseId := uuid.New()
-	log.Println("CONNECT SSE |", sseId, "|", path+"/"+channelId)
+	log.Printf("CONNECT SSE | %s | %s/%s", sseId, path, channelId)
 	// Create new listener
 	listener := channelManager.OpenListener(path, channelId)
 	// Wait for close
@@ -154,7 +158,7 @@ func sseAdmin(c *gin.Context) {
 	c.Stream(func(w io.Writer) bool {
 		select {
 		case <-clientGone: // Close connection
-			log.Println("DISCONECT SSE |", sseId, "|", path+"/"+channelId)
+			log.Printf("DISCONNECT SSE | %s | %s/%s", sseId, path, channelId)
 			return false
 		case message := <-listener: // Send message
 			c.SSEvent("", message)
@@ -165,7 +169,7 @@ func sseAdmin(c *gin.Context) {
 
 func home(c *gin.Context) {
 	a := c.ClientIP()
-	log.Println(a)
+	log.Printf("IP: %s", a)
 	c.JSON(http.StatusOK, gin.H{
 		"Server-Id":  sseInstanceId,               // server uuid
 		"SSE-Total":  channelManager.SseTotal,     // count SSE connections
