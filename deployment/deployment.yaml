@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: go-streaming-api
-          image: gcr.io/quant-edge-213907/equix/service/go-streaming:23.0315.1634_90c3048
+          image: gcr.io/quant-edge-213907/equix/service/go-streaming:23.0315.1644_756f191
           ports:
             - containerPort: 80
           volumeMounts:
