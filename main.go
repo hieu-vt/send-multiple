@@ -80,14 +80,18 @@ func main() {
 			param.ErrorMessage,
 		)
 	}))
-	router.GET("/streaming/:path/:channel", stream)      // sse streaming
-	router.GET("/v1/:path/:channel", webStreaming)       // sse web
-	router.OPTIONS("/v1/:path/:channel", webStreaming)   // sse web OPTIONS
-	router.GET("/ws-streaming/:path/:channel", wsStream) // websocket streaming
-	router.GET("/admin", sseAdmin)                       // admin streaming
-	router.GET("/", home)                                // home
+	router.GET("/streaming/:path/:channel", stream)           // sse streaming
+	router.GET("/v1/:path/:channel", webStreaming)            // sse web
+	router.OPTIONS("/v1/:path/:channel", webStreamingOptions) // sse web OPTIONS
+	router.GET("/ws-streaming/:path/:channel", wsStream)      // websocket streaming
+	router.GET("/admin", sseAdmin)                            // admin streaming
+	router.GET("/", home)                                     // home
 	log.Printf("listen port: %s", config.Port)
 	router.Run(":" + config.Port)
+}
+
+func webStreamingOptions(c *gin.Context) {
+	c.Writer.WriteHeader(http.StatusNoContent)
 }
 
 func webStreaming(c *gin.Context) {
