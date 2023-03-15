@@ -82,6 +82,7 @@ func main() {
 	}))
 	router.GET("/streaming/:path/:channel", stream)      // sse streaming
 	router.GET("/v1/:path/:channel", webStreaming)       // sse web
+	router.OPTIONS("/v1/:path/:channel", webStreaming)   // sse web OPTIONS
 	router.GET("/ws-streaming/:path/:channel", wsStream) // websocket streaming
 	router.GET("/admin", sseAdmin)                       // admin streaming
 	router.GET("/", home)                                // home
