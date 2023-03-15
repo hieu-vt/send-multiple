@@ -6,5 +6,5 @@
         "db": "0",
         "password": "7e49302b475067e7177aef16f015d753"
     },
-    "prefix_channel": "streaming"
+    "prefix_channel": "v1:streaming"
 }

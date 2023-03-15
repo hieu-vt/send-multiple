@@ -81,11 +81,39 @@ func main() {
 		)
 	}))
 	router.GET("/streaming/:path/:channel", stream)      // sse streaming
+	router.GET("/v1/:path/:channel", webStreaming)       // sse web
 	router.GET("/ws-streaming/:path/:channel", wsStream) // websocket streaming
 	router.GET("/admin", sseAdmin)                       // admin streaming
 	router.GET("/", home)                                // home
 	log.Printf("listen port: %s", config.Port)
 	router.Run(":" + config.Port)
+}
+
+func webStreaming(c *gin.Context) {
+	channelId := c.Param("channel") // Get channel
+	path := c.Param("path")         // Get path
+	sseId := uuid.New()             // ID of sse connection
+	log.Printf("CONNECT SSE | %s | %s/%s", sseId, path, channelId)
+	channelManager.SseTotal += 1
+	channelManager.SseLive += 1
+	// Create new listener
+	listener := channelManager.OpenListener(path, channelId)
+	// Wait for close
+	defer channelManager.CloseListener(path, channelId, listener)
+	clientGone := c.Request.Context().Done()
+	// Keep connection
+	c.Stream(func(w io.Writer) bool {
+		select {
+		case <-clientGone: // Close connection
+			log.Printf("DISCONNECT SSE | %s | %s/%s", sseId, path, channelId)
+			channelManager.SseClosed += 1
+			channelManager.SseLive -= 1
+			return false
+		case message := <-listener: // Send message
+			c.SSEvent("", message)
+			return true
+		}
+	})
 }
 
 func stream(c *gin.Context) {
