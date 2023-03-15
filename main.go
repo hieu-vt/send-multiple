@@ -30,7 +30,7 @@ var upgrader = websocket.Upgrader{
 
 func main() {
 	log.SetPrefix("GO-STREAMING: ")
-	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+	log.SetFlags(log.Ldate | log.Lmsgprefix | log.Ltime | log.Lshortfile)
 
 	gin.SetMode(gin.ReleaseMode)                                      // Set release mode
 	config, _ := utils.LoadConfiguration("config/streaming-api.json") // Get config streaming
@@ -62,6 +62,29 @@ func main() {
 			go utils.SendPing(channelManager, sseInstanceId, rdb) // Send heartbeat
 		}
 	}()
+	go func() {
+		// Status streaming
+		channelId := "status"
+		path := "streaming"
+		pubPath := fmt.Sprintf("%s:%s", path, channelId)
+		ticker := time.Tick(time.Duration(10000 * time.Millisecond)) // Interval 10s send heartbeat
+		for {
+			<-ticker
+			// Keep connection
+			msg := gin.H{
+				"Server-Id":  sseInstanceId,               // server uuid
+				"SSE-Total":  channelManager.SseTotal,     // count SSE connections
+				"SSE-Closed": channelManager.SseClosed,    // count SSE closed connection
+				"SSE-Live":   channelManager.SseLive,      // count SSE online connections
+				"Messages":   channelManager.TotalMessage, // count message send to channel
+				"WS-Total":   channelManager.WsTotal,      // count Websocket connections
+				"WS-Closed":  channelManager.WsClosed,     // count Websocket closed connection
+				"WS-Live":    channelManager.WsLive,       // count Websocket online connections
+			}
+			content := fmt.Sprintf("%#v", msg)
+			go utils.SendDataString(channelManager, pubPath, content)
+		}
+	}()
 	router := gin.New() // Init GIN rounter
 	// Custom Logger
 	router.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
@@ -84,8 +107,7 @@ func main() {
 	router.GET("/v1/:path/:channel", webStreaming)            // sse web
 	router.OPTIONS("/v1/:path/:channel", webStreamingOptions) // sse web OPTIONS
 	router.GET("/ws-streaming/:path/:channel", wsStream)      // websocket streaming
-	router.GET("/admin", sseAdmin)                            // admin streaming
-	router.GET("/", home)                                     // home
+	router.GET("/status", streamingStatus)                    // admin streaming
 	log.Printf("listen port: %s", config.Port)
 	router.Run(":" + config.Port)
 }
@@ -181,9 +203,10 @@ func wsStream(c *gin.Context) {
 	channelManager.WsLive -= 1
 }
 
-func sseAdmin(c *gin.Context) {
-	channelId := "admin"
-	path := "sse"
+func streamingStatus(c *gin.Context) {
+	channelId := "status"
+	path := "streaming"
+
 	sseId := uuid.New()
 	log.Printf("CONNECT SSE | %s | %s/%s", sseId, path, channelId)
 	// Create new listener
@@ -201,20 +224,5 @@ func sseAdmin(c *gin.Context) {
 			c.SSEvent("", message)
 			return true
 		}
-	})
-}
-
-func home(c *gin.Context) {
-	a := c.ClientIP()
-	log.Printf("IP: %s", a)
-	c.JSON(http.StatusOK, gin.H{
-		"Server-Id":  sseInstanceId,               // server uuid
-		"SSE-Total":  channelManager.SseTotal,     // count SSE connections
-		"SSE-Closed": channelManager.SseClosed,    // count SSE closed connection
-		"SSE-Live":   channelManager.SseLive,      // count SSE online connections
-		"Messages":   channelManager.TotalMessage, // count message send to channel
-		"WS-Total":   channelManager.WsTotal,      // count Websocket connections
-		"WS-Closed":  channelManager.WsClosed,     // count Websocket closed connection
-		"WS-Live":    channelManager.WsLive,       // count Websocket online connections
 	})
 }

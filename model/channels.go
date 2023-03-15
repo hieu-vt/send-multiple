@@ -106,7 +106,7 @@ func (m *ChannelManager) OpenListener(path string, channelLink string) chan inte
 			Chan:      listener,
 		}
 	}
-	if path != "sse" && channelLink != "admin" {
+	if path != "sse" && channelLink != "status" {
 		// Add Ping channel to every listener
 		m.open <- &Listener{
 			ChannelId: "PING",

@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 )
 
@@ -32,10 +33,24 @@ func SendData(channelManager *model.ChannelManager, msg *redis.Message, prefix s
 	channelManager.Submit(channel, msg.Payload)
 }
 
+func SendDataString(channelManager *model.ChannelManager, channel string, msg string) {
+	channelManager.Submit(channel, msg)
+}
+
 func SendPing(channelManager *model.ChannelManager, sseInstanceId string, rdb *redis.Client) {
 	channelManager.Submit("PING", time.Now().Format("01-02-2006 15:04:05"))
 	go func() {
-		str := fmt.Sprintf("%s, SSE-Total:%d, SSE-Live:%d, SSE-Closed:%d, WS-Total:%d, WS-Live:%d, WS-Closed:%d, Messages:%d", sseInstanceId, channelManager.SseTotal, channelManager.SseLive, channelManager.SseClosed, channelManager.WsTotal, channelManager.WsLive, channelManager.WsClosed, channelManager.TotalMessage)
-		rdb.Publish(context.Background(), "sse:admin", str).Err()
+		msg := gin.H{
+			"Server-Id":  sseInstanceId,               // server uuid
+			"SSE-Total":  channelManager.SseTotal,     // count SSE connections
+			"SSE-Closed": channelManager.SseClosed,    // count SSE closed connection
+			"SSE-Live":   channelManager.SseLive,      // count SSE online connections
+			"Messages":   channelManager.TotalMessage, // count message send to channel
+			"WS-Total":   channelManager.WsTotal,      // count Websocket connections
+			"WS-Closed":  channelManager.WsClosed,     // count Websocket closed connection
+			"WS-Live":    channelManager.WsLive,       // count Websocket online connections
+		}
+		content := fmt.Sprintf("%#v", msg)
+		rdb.Publish(context.Background(), "streaming:status", content).Err()
 	}()
 }
