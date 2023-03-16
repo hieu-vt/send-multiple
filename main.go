@@ -103,17 +103,71 @@ func main() {
 			param.ErrorMessage,
 		)
 	}))
-	router.GET("/streaming/:path/:channel", stream)           // sse streaming
-	router.GET("/v1/:path/:channel", webStreaming)            // sse web
-	router.OPTIONS("/v1/:path/:channel", webStreamingOptions) // sse web OPTIONS
-	router.GET("/ws-streaming/:path/:channel", wsStream)      // websocket streaming
-	router.GET("/status", streamingStatus)                    // admin streaming
+	router.GET("/streaming/:path/:channel", stream)      // sse streaming
+	router.GET("/v1/:path/:channel", webStreaming)       // sse web
+	router.GET("/ws-streaming/:path/:channel", wsStream) // websocket streaming
+	router.GET("/status", streamingStatus)               // admin streaming
+
+	router.GET("/v1/depth/:symbol", pingStreaming)                          // sse streaming
+	router.GET("/v1/trades/:symbol", pingStreaming)                         // sse streaming
+	router.GET("/v1/historical/:interval/:exchange/:symbol", pingStreaming) // sse streaming
+	router.GET("/v1/news/announcements/:symbol", pingStreaming)             // sse streaming
+	router.GET("/v1/news/all", pingStreaming)                               // sse streaming
+	router.GET("/v1/price/symbol", pingStreaming)                           // sse streaming
+	router.GET("/v1/interval/:symbol", pingStreaming)                       // sse streaming
+	router.GET("/v1/interval_quote/:symbol", pingStreaming)                 // sse streaming
+	router.GET("/v1/quote_mobile/:symbol", pingStreaming)                   // sse streaming
+	router.GET("/v1/streaming/:symbol", pingStreaming)                      // sse streaming
+	router.GET("/v1/mobile-streaming/:symbol", pingStreaming)               // sse streaming
+	router.GET("/v1/watchlist/:watchlist", pingStreaming)                   // sse streaming
+	// options
+	router.OPTIONS("/v1/:path/:channel", webStreamingOptions)                         // sse web OPTIONS
+	router.OPTIONS("/v1/depth/:symbol", webStreamingOptions)                          // sse web OPTIONS
+	router.OPTIONS("/v1/trades/:symbol", webStreamingOptions)                         // sse web OPTIONS
+	router.OPTIONS("/v1/historical/:interval/:exchange/:symbol", webStreamingOptions) // sse web OPTIONS
+	router.OPTIONS("/v1/news/announcements/:symbol", webStreamingOptions)             // sse web OPTIONS
+	router.OPTIONS("/v1/news/all", webStreamingOptions)                               // sse web OPTIONS
+	router.OPTIONS("/v1/price/symbol", webStreamingOptions)                           // sse web OPTIONS
+	router.OPTIONS("/v1/interval/:symbol", webStreamingOptions)                       // sse web OPTIONS
+	router.OPTIONS("/v1/interval_quote/:symbol", webStreamingOptions)                 // sse web OPTIONS
+	router.OPTIONS("/v1/quote_mobile/:symbol", webStreamingOptions)                   // sse web OPTIONS
+	router.OPTIONS("/v1/streaming/:symbol", webStreamingOptions)                      // sse web OPTIONS
+	router.OPTIONS("/v1/mobile-streaming/:symbol", webStreamingOptions)               // sse web OPTIONS
+	router.OPTIONS("/v1/watchlist/:watchlist", webStreamingOptions)                   // sse web OPTIONS
+
 	log.Printf("listen port: %s", config.Port)
 	router.Run(":" + config.Port)
 }
 
 func webStreamingOptions(c *gin.Context) {
 	c.Writer.WriteHeader(http.StatusNoContent)
+}
+
+func pingStreaming(c *gin.Context) {
+	channelId := "streaming" // Get channel
+	path := "ping"           // Get path
+	sseId := uuid.New()      // ID of sse connection
+	log.Printf("CONNECT SSE | %s | %s/%s", sseId, path, channelId)
+	channelManager.SseTotal += 1
+	channelManager.SseLive += 1
+	// Create new listener
+	listener := channelManager.OpenListener(path, channelId)
+	// Wait for close
+	defer channelManager.CloseListener(path, channelId, listener)
+	clientGone := c.Request.Context().Done()
+	// Keep connection
+	c.Stream(func(w io.Writer) bool {
+		select {
+		case <-clientGone: // Close connection
+			log.Printf("DISCONNECT SSE | %s | %s/%s", sseId, path, channelId)
+			channelManager.SseClosed += 1
+			channelManager.SseLive -= 1
+			return false
+		case message := <-listener: // Send message
+			c.SSEvent("", message)
+			return true
+		}
+	})
 }
 
 func webStreaming(c *gin.Context) {

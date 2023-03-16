@@ -106,12 +106,10 @@ func (m *ChannelManager) OpenListener(path string, channelLink string) chan inte
 			Chan:      listener,
 		}
 	}
-	if path != "sse" && channelLink != "status" {
-		// Add Ping channel to every listener
-		m.open <- &Listener{
-			ChannelId: "PING",
-			Chan:      listener,
-		}
+	// Add Ping channel to every listener
+	m.open <- &Listener{
+		ChannelId: "PING",
+		Chan:      listener,
 	}
 	return listener
 }
@@ -125,12 +123,10 @@ func (m *ChannelManager) CloseListener(path string, channelLink string, channel 
 			Chan:      channel,
 		}
 	}
-	if path != "sse" && channelLink != "admin" {
-		// Close Ping channel
-		m.close <- &Listener{
-			ChannelId: "PING",
-			Chan:      channel,
-		}
+	// Close Ping channel
+	m.close <- &Listener{
+		ChannelId: "PING",
+		Chan:      channel,
 	}
 }
 
