@@ -139,7 +139,7 @@ func main() {
 	router.Run(":" + config.Port)
 }
 
-func webStreamingOptions(c *gin.Context) {
+func webStreamingOptions(c *gin.Context) { // streaming POC
 	c.Writer.WriteHeader(http.StatusNoContent)
 }
 
@@ -170,7 +170,7 @@ func pingStreaming(c *gin.Context) {
 	})
 }
 
-func webStreaming(c *gin.Context) {
+func webStreaming(c *gin.Context) { // streaming POC
 	channelId := c.Param("channel") // Get channel
 	path := c.Param("path")         // Get path
 	sseId := uuid.New()             // ID of sse connection
