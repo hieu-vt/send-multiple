@@ -54,15 +54,15 @@ func SendPing(channelManager *model.ChannelManager, sseInstanceId string) {
 
 func SendStatus(channelManager *model.ChannelManager, sseInstanceId string, rdb *redis.Client, prefix string) {
 	msg := gin.H{
-		"Time":       time.Now(),                  // server time
-		"Server-Id":  sseInstanceId,               // server uuid
-		"SSE-Total":  channelManager.SseTotal,     // count SSE connections
-		"SSE-Closed": channelManager.SseClosed,    // count SSE closed connection
-		"SSE-Live":   channelManager.SseLive,      // count SSE online connections
-		"Messages":   channelManager.TotalMessage, // count message send to channel
-		"WS-Total":   channelManager.WsTotal,      // count Websocket connections
-		"WS-Closed":  channelManager.WsClosed,     // count Websocket closed connection
-		"WS-Live":    channelManager.WsLive,       // count Websocket online connections
+		"Time":       time.Now().Format("2017-09-07 17:06:06"), // server time
+		"Server-Id":  sseInstanceId,                            // server uuid
+		"SSE-Total":  channelManager.SseTotal,                  // count SSE connections
+		"SSE-Closed": channelManager.SseClosed,                 // count SSE closed connection
+		"SSE-Live":   channelManager.SseLive,                   // count SSE online connections
+		"Messages":   channelManager.TotalMessage,              // count message send to channel
+		"WS-Total":   channelManager.WsTotal,                   // count Websocket connections
+		"WS-Closed":  channelManager.WsClosed,                  // count Websocket closed connection
+		"WS-Live":    channelManager.WsLive,                    // count Websocket online connections
 	}
 	content := fmt.Sprintf("%#v", msg)
 	path := "streaming:status"
