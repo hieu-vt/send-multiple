@@ -49,7 +49,7 @@ func SendPing(channelManager *model.ChannelManager, sseInstanceId string, rdb *r
 		Id:   "PING",
 	}
 	s, _ := json.Marshal(pingObj)
-	channelManager.Submit("PING", fmt.Sprint(s))
+	channelManager.Submit("PING", string(s))
 	go func() {
 		msg := gin.H{
 			"Server-Id":  sseInstanceId,               // server uuid
