@@ -58,30 +58,15 @@ func main() {
 		ticker := time.Tick(time.Duration(10000 * time.Millisecond)) // Interval 10s send heartbeat
 		for {
 			<-ticker
-			go utils.SendPing(channelManager, sseInstanceId, rdb) // Send heartbeat
+			go utils.SendPing(channelManager, sseInstanceId) // Send heartbeat
 		}
 	}()
 	go func() {
-		// Status streaming
-		channelId := "status"
-		path := "streaming"
-		pubPath := fmt.Sprintf("%s:%s", path, channelId)
-		ticker := time.Tick(time.Duration(10000 * time.Millisecond)) // Interval 10s send heartbeat
+		// Status
+		ticker := time.Tick(time.Duration(20000 * time.Millisecond)) // Interval 10s send status
 		for {
 			<-ticker
-			// Keep connection
-			msg := gin.H{
-				"Server-Id":  sseInstanceId,               // server uuid
-				"SSE-Total":  channelManager.SseTotal,     // count SSE connections
-				"SSE-Closed": channelManager.SseClosed,    // count SSE closed connection
-				"SSE-Live":   channelManager.SseLive,      // count SSE online connections
-				"Messages":   channelManager.TotalMessage, // count message send to channel
-				"WS-Total":   channelManager.WsTotal,      // count Websocket connections
-				"WS-Closed":  channelManager.WsClosed,     // count Websocket closed connection
-				"WS-Live":    channelManager.WsLive,       // count Websocket online connections
-			}
-			content := fmt.Sprintf("%#v", msg)
-			go utils.SendDataString(channelManager, pubPath, content)
+			go utils.SendStatus(channelManager, sseInstanceId, rdb, prefix) // Send status
 		}
 	}()
 	router := gin.New() // Init GIN rounter
@@ -143,8 +128,8 @@ func webStreamingOptions(c *gin.Context) { // streaming POC
 }
 
 func pingStreaming(c *gin.Context) {
-	channelId := "streaming" // Get channel
 	path := "ping"           // Get path
+	channelId := "streaming" // Get channel
 	sseId := uuid.New()      // ID of sse connection
 	log.Printf("CONNECT SSE | %s | %s/%s", sseId, path, channelId)
 	channelManager.SseTotal += 1
@@ -170,8 +155,8 @@ func pingStreaming(c *gin.Context) {
 }
 
 func webStreaming(c *gin.Context) { // streaming POC
-	channelId := c.Param("channel") // Get channel
 	path := c.Param("path")         // Get path
+	channelId := c.Param("channel") // Get channel
 	sseId := uuid.New()             // ID of sse connection
 	log.Printf("CONNECT SSE | %s | %s/%s", sseId, path, channelId)
 	channelManager.SseTotal += 1
@@ -197,8 +182,8 @@ func webStreaming(c *gin.Context) { // streaming POC
 }
 
 func stream(c *gin.Context) {
-	channelId := c.Param("channel") // Get channel
 	path := c.Param("path")         // Get path
+	channelId := c.Param("channel") // Get channel
 	sseId := uuid.New()             // ID of sse connection
 	log.Printf("CONNECT SSE | %s | %s/%s", sseId, path, channelId)
 	channelManager.SseTotal += 1
@@ -231,8 +216,8 @@ func wsStream(c *gin.Context) {
 		return
 	}
 	defer ws.Close()
-	channelId := c.Param("channel") // Get channel
 	path := c.Param("path")         // Get path
+	channelId := c.Param("channel") // Get channel
 	sseId := uuid.New()             // ID of sse connection
 	log.Printf("CONNECT WEBSOCKET | %s | %s/%s", sseId, path, channelId)
 	channelManager.WsTotal += 1
@@ -257,8 +242,8 @@ func wsStream(c *gin.Context) {
 }
 
 func streamingStatus(c *gin.Context) {
-	channelId := "status"
 	path := "streaming"
+	channelId := "status"
 
 	sseId := uuid.New()
 	log.Printf("CONNECT SSE | %s | %s/%s", sseId, path, channelId)
