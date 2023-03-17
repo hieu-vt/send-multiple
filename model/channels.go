@@ -1,6 +1,7 @@
 package model
 
 import (
+	"log"
 	"strings"
 
 	"github.com/dustin/go-broadcast"
@@ -106,10 +107,14 @@ func (m *ChannelManager) OpenListener(path string, channelLink string) chan inte
 			Chan:      listener,
 		}
 	}
-	// Add Ping channel to every listener
-	m.open <- &Listener{
-		ChannelId: "PING",
-		Chan:      listener,
+	if path == "streaming" && channelLink == "status" {
+		log.Printf("Bypass PING msg to status link")
+	} else {
+		// Add Ping channel to every listener
+		m.open <- &Listener{
+			ChannelId: "PING",
+			Chan:      listener,
+		}
 	}
 	return listener
 }
