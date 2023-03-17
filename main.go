@@ -31,7 +31,6 @@ var upgrader = websocket.Upgrader{
 func main() {
 	log.SetPrefix("GO-STREAMING: ")
 	log.SetFlags(log.Ldate | log.Lmsgprefix | log.Ltime | log.Lshortfile)
-
 	gin.SetMode(gin.ReleaseMode)                                      // Set release mode
 	config, _ := utils.LoadConfiguration("config/streaming-api.json") // Get config streaming
 	log.Printf(config.Redis.Host)

@@ -38,7 +38,18 @@ func SendDataString(channelManager *model.ChannelManager, channel string, msg st
 }
 
 func SendPing(channelManager *model.ChannelManager, sseInstanceId string, rdb *redis.Client) {
-	channelManager.Submit("PING", time.Now().Format("01-02-2006 15:04:05"))
+	date := time.Now()
+	timePing := date.UnixMilli()
+	dataPing := model.DataObj{
+		Ping: timePing,
+	}
+	pingObj := model.PingObj{
+		Data: dataPing,
+		Type: "PING",
+		Id:   "PING",
+	}
+	s, _ := json.Marshal(pingObj)
+	channelManager.Submit("PING", fmt.Sprint(s))
 	go func() {
 		msg := gin.H{
 			"Server-Id":  sseInstanceId,               // server uuid
