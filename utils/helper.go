@@ -66,7 +66,7 @@ func SendStatus(channelManager *model.ChannelManager, sseInstanceId string, rdb 
 	}
 	content := fmt.Sprintf("%#v", msg)
 	path := "streaming:status"
-	if len(prefix) <= 0 {
+	if len(prefix) > 0 {
 		path = fmt.Sprintf("%s:streaming:status", prefix)
 	}
 	rdb.Publish(context.Background(), path, content).Err()
