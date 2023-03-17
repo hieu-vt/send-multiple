@@ -54,7 +54,7 @@ func SendPing(channelManager *model.ChannelManager, sseInstanceId string) {
 
 func SendStatus(channelManager *model.ChannelManager, sseInstanceId string, rdb *redis.Client, prefix string) {
 	msg := gin.H{
-		"Time":       time.Now().Format("2017-09-07 17:06:06"), // server time
+		"Time":       time.Now().Format("2006-01-02 15:04:05"), // server time
 		"Server-Id":  sseInstanceId,                            // server uuid
 		"SSE-Total":  channelManager.SseTotal,                  // count SSE connections
 		"SSE-Closed": channelManager.SseClosed,                 // count SSE closed connection
