@@ -54,7 +54,7 @@ Library:
 
 # INFO
 - / : Get service info
-- /admin : Get sse service info
+- /status : Get sse service info
 
 # SSE STREAMING
 - /streaming/:path/:channel : get sse streaming by path and channel

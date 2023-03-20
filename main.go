@@ -88,22 +88,22 @@ func main() {
 		)
 	}))
 	router.GET("/streaming/:path/:channel", stream)      // sse streaming
-	router.GET("/v1/:path/:channel", webStreaming)       // sse web
 	router.GET("/ws-streaming/:path/:channel", wsStream) // websocket streaming
 	router.GET("/status", streamingStatus)               // admin streaming
-
-	router.GET("/v1/depth/:symbol", pingStreaming)                          // sse streaming
-	router.GET("/v1/trades/:symbol", pingStreaming)                         // sse streaming
-	router.GET("/v1/historical/:interval/:exchange/:symbol", pingStreaming) // sse streaming
-	router.GET("/v1/news/announcements/:symbol", pingStreaming)             // sse streaming
-	router.GET("/v1/news/all", pingStreaming)                               // sse streaming
-	router.GET("/v1/price/symbol", pingStreaming)                           // sse streaming
-	router.GET("/v1/interval/:symbol", pingStreaming)                       // sse streaming
-	router.GET("/v1/interval_quote/:symbol", pingStreaming)                 // sse streaming
-	router.GET("/v1/quote_mobile/:symbol", pingStreaming)                   // sse streaming
-	router.GET("/v1/streaming/:symbol", pingStreaming)                      // sse streaming
-	router.GET("/v1/mobile-streaming/:symbol", pingStreaming)               // sse streaming
-	router.GET("/v1/watchlist/:watchlist", pingStreaming)                   // sse streaming
+	// sse web v1
+	router.GET("/v1/:path/:channel", webStreaming)                          // sse web
+	router.GET("/v1/depth/:symbol", pingStreaming)                          // Ping sse web
+	router.GET("/v1/trades/:symbol", pingStreaming)                         // Ping sse web
+	router.GET("/v1/historical/:interval/:exchange/:symbol", pingStreaming) // Ping sse web
+	router.GET("/v1/news/announcements/:symbol", pingStreaming)             // Ping sse web
+	router.GET("/v1/news/all", pingStreaming)                               // Ping sse web
+	router.GET("/v1/price/symbol", pingStreaming)                           // Ping sse web
+	router.GET("/v1/interval/:symbol", pingStreaming)                       // Ping sse web
+	router.GET("/v1/interval_quote/:symbol", pingStreaming)                 // Ping sse web
+	router.GET("/v1/quote_mobile/:symbol", pingStreaming)                   // Ping sse web
+	router.GET("/v1/streaming/:symbol", pingStreaming)                      // Ping sse web
+	router.GET("/v1/mobile-streaming/:symbol", pingStreaming)               // Ping sse web
+	router.GET("/v1/watchlist/:watchlist", pingStreaming)                   // Ping sse web
 	// options
 	router.OPTIONS("/v1/:path/:channel", webStreamingOptions)                         // sse web OPTIONS
 	router.OPTIONS("/v1/depth/:symbol", webStreamingOptions)                          // sse web OPTIONS
