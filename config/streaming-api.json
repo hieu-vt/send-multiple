@@ -1,10 +1,10 @@
 {
     "port": "8083",
     "redis": {
-        "host": "localhost",
+        "host": "10.0.60.164",
         "port": "6379",
         "db": "0",
         "password": "7e49302b475067e7177aef16f015d753"
     },
-    "prefix_channel": "streaming"
+    "prefix_channel": "v1;streaming"
 }
