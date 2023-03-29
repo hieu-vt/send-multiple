@@ -92,32 +92,12 @@ func main() {
 	router.GET("/status", streamingStatus)               // admin streaming
 	// sse web v1
 	router.GET("/v1/:path/:channel", webStreaming)                          // sse web
-	router.GET("/v1/depth/:symbol", pingStreaming)                          // Ping sse web
-	router.GET("/v1/trades/:symbol", pingStreaming)                         // Ping sse web
-	router.GET("/v1/historical/:interval/:exchange/:symbol", pingStreaming) // Ping sse web
-	router.GET("/v1/news/announcements/:symbol", pingStreaming)             // Ping sse web
-	router.GET("/v1/news/all", pingStreaming)                               // Ping sse web
-	router.GET("/v1/price/symbol", pingStreaming)                           // Ping sse web
-	router.GET("/v1/interval/:symbol", pingStreaming)                       // Ping sse web
-	router.GET("/v1/interval_quote/:symbol", pingStreaming)                 // Ping sse web
-	router.GET("/v1/quote_mobile/:symbol", pingStreaming)                   // Ping sse web
-	router.GET("/v1/streaming/:symbol", pingStreaming)                      // Ping sse web
-	router.GET("/v1/mobile-streaming/:symbol", pingStreaming)               // Ping sse web
-	router.GET("/v1/watchlist/:watchlist", pingStreaming)                   // Ping sse web
+	router.GET("/v1/historical/:interval/:exchange/:channel", pingStreaming) // Ping sse web
+	router.GET("/v1/news/announcements/:channel", pingStreaming)             // Ping sse web
 	// options
 	router.OPTIONS("/v1/:path/:channel", webStreamingOptions)                         // sse web OPTIONS
-	router.OPTIONS("/v1/depth/:symbol", webStreamingOptions)                          // sse web OPTIONS
-	router.OPTIONS("/v1/trades/:symbol", webStreamingOptions)                         // sse web OPTIONS
-	router.OPTIONS("/v1/historical/:interval/:exchange/:symbol", webStreamingOptions) // sse web OPTIONS
-	router.OPTIONS("/v1/news/announcements/:symbol", webStreamingOptions)             // sse web OPTIONS
-	router.OPTIONS("/v1/news/all", webStreamingOptions)                               // sse web OPTIONS
-	router.OPTIONS("/v1/price/symbol", webStreamingOptions)                           // sse web OPTIONS
-	router.OPTIONS("/v1/interval/:symbol", webStreamingOptions)                       // sse web OPTIONS
-	router.OPTIONS("/v1/interval_quote/:symbol", webStreamingOptions)                 // sse web OPTIONS
-	router.OPTIONS("/v1/quote_mobile/:symbol", webStreamingOptions)                   // sse web OPTIONS
-	router.OPTIONS("/v1/streaming/:symbol", webStreamingOptions)                      // sse web OPTIONS
-	router.OPTIONS("/v1/mobile-streaming/:symbol", webStreamingOptions)               // sse web OPTIONS
-	router.OPTIONS("/v1/watchlist/:watchlist", webStreamingOptions)                   // sse web OPTIONS
+	router.OPTIONS("/v1/historical/:interval/:exchange/:channel", webStreamingOptions) // sse web OPTIONS
+	router.OPTIONS("/v1/news/announcements/:channel", webStreamingOptions)             // sse web OPTIONS
 
 	log.Printf("listen port: %s", config.Port)
 	router.Run(":" + config.Port)
