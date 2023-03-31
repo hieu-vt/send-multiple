@@ -1,13 +1,11 @@
-FROM golang:latest
+FROM golang:alpine
 
-# Set the current working directory inside the container
-WORKDIR /app
-
-# Copy the source code into the container
+WORKDIR /build
 COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o app .
 
-# Build the Go application
-RUN go build -o main .
-
-# Specify the command to run when the container starts
-CMD ["./main"]
+FROM alpine:latest
+RUN apk --no-cache add ca-certificates
+WORKDIR /root/
+COPY --from=0 /build/app .
+CMD ["./app"]
