@@ -14,6 +14,7 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
+	"github.com/penglongli/gin-metrics/ginmetrics"
 )
 
 var sseInstanceId string = uuid.New().String() // uuid of see service
@@ -69,7 +70,16 @@ func main() {
 			go utils.SendStatus(channelManager, sseInstanceId, rdb, prefix) // Send status
 		}
 	}()
+
 	router := gin.New() // Init GIN rounter
+
+	// Metris
+	metrics := ginmetrics.GetMonitor()
+	metrics.SetMetricPath("/metrics")
+	metrics.SetSlowTime(2)
+	metrics.SetDuration([]float64{0.1, 0.3, 1.2, 5, 10})
+	metrics.Use(router)
+
 	// Custom Logger
 	router.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
 		return fmt.Sprintf("%s |%s %d %s| %s |%s %s %s %s | %s | %s | %s\n",
@@ -91,11 +101,11 @@ func main() {
 	router.GET("/ws-streaming/:path/:channel", wsStream) // websocket streaming
 	router.GET("/status", streamingStatus)               // admin streaming
 	// sse web v1
-	router.GET("/v1/:path/:channel", webStreaming)                          // sse web
+	router.GET("/v1/:path/:channel", webStreaming)                           // sse web
 	router.GET("/v1/historical/:interval/:exchange/:channel", pingStreaming) // Ping sse web
 	router.GET("/v1/news/announcements/:channel", pingStreaming)             // Ping sse web
 	// options
-	router.OPTIONS("/v1/:path/:channel", webStreamingOptions)                         // sse web OPTIONS
+	router.OPTIONS("/v1/:path/:channel", webStreamingOptions)                          // sse web OPTIONS
 	router.OPTIONS("/v1/historical/:interval/:exchange/:channel", webStreamingOptions) // sse web OPTIONS
 	router.OPTIONS("/v1/news/announcements/:channel", webStreamingOptions)             // sse web OPTIONS
 
