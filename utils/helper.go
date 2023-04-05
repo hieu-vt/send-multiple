@@ -13,6 +13,19 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
+func remove(s []string, i int) []string {
+	s[i] = s[len(s)-1]
+	return s[:len(s)-1]
+}
+
+func GetPrefixStreaming(arrParams []string) (prefix string, key string) {
+	var lastIndex = len(arrParams) - 1
+	key = arrParams[lastIndex]
+	arrayx := remove(arrParams, lastIndex)
+	prefix = strings.Join(arrayx[:], ":")
+	return prefix, key
+}
+
 func LoadConfiguration(file string) (model.Config, error) {
 	var config model.Config
 	configFile, err := os.Open(file)

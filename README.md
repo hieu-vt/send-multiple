@@ -8,6 +8,7 @@ Library:
 - redis pub/sub: https://github.com/go-redis/redis/v8
 - websocket: https://github.com/gorilla/websocket
 - broadcast: https://github.com/dustin/go-broadcast
+- metrics: github.com/penglongli/gin-metrics/ginmetrics
 
 # STRUCTOR
 ```
@@ -39,6 +40,8 @@ Library:
     - port: Port redis
     - db: Database
     - password: Password
+- prefix_channel: prefix channel to subscribe redis
+    Example: subscribe v1:streaming:price:ANZ.ASX -> /streaming/price/ANZ.ASX
 
 ```
 {
@@ -53,8 +56,8 @@ Library:
 ```
 
 # INFO
-- / : Get service info
-- /status : Get sse service info
+- /metrics : Get metrics prometheus
+- /status : Get status streaming
 
 # SSE STREAMING
 - /streaming/:path/:channel : get sse streaming by path and channel
