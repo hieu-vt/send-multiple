@@ -38,6 +38,11 @@ func LoadConfiguration(file string) (model.Config, error) {
 	return config, err
 }
 
+func LoadFile(file string) (string, error) {
+	dat, err := os.ReadFile(file)
+	return string(dat), err
+}
+
 func SendData(channelManager *model.ChannelManager, msg *redis.Message, prefix string) {
 	channel := msg.Channel
 	if len(prefix) != 0 {

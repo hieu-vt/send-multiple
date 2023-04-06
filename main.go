@@ -17,6 +17,7 @@ import (
 	"github.com/penglongli/gin-metrics/ginmetrics"
 )
 
+var jwtToken model.JWT
 var sseInstanceId string = uuid.New().String() // uuid of see service
 var channelManager *model.ChannelManager       // channel manager
 
@@ -34,6 +35,10 @@ func main() {
 	log.SetFlags(log.Ldate | log.Lmsgprefix | log.Ltime | log.Lshortfile)
 	gin.SetMode(gin.ReleaseMode)                                      // Set release mode
 	config, _ := utils.LoadConfiguration("config/streaming-api.json") // Get config streaming
+	prvKey, _ := utils.LoadFile("config/config-jwtrs256-key")
+	pubKey, _ := utils.LoadFile("config/config-jwtrs256-key-pem")
+	jwtToken = model.NewJWT([]byte(prvKey), []byte(pubKey))
+
 	log.Printf(config.Redis.Host)
 	channelManager = model.NewChannelManager() // Init channel manager
 	prefix := config.PrefixChannel
@@ -72,14 +77,12 @@ func main() {
 	}()
 
 	router := gin.New() // Init GIN rounter
-
 	// Metris
 	metrics := ginmetrics.GetMonitor()
 	metrics.SetMetricPath("/metrics")
 	metrics.SetSlowTime(2)
 	metrics.SetDuration([]float64{0.1, 0.3, 1.2, 5, 10})
 	metrics.Use(router)
-
 	// Custom Logger
 	router.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
 		return fmt.Sprintf("%s |%s %d %s| %s |%s %s %s %s | %s | %s | %s\n",
@@ -119,7 +122,17 @@ func options(c *gin.Context) { // options
 }
 
 func sseStreaming(c *gin.Context) { // sse streaming
-	// get parameters
+	// validate token
+	token, err := jwtToken.Validate(c.GetHeader("Authorization"))
+	if err != nil {
+		c.JSON(401, gin.H{
+			"code":    401,
+			"message": "Token invalid",
+		})
+		return
+	}
+	log.Printf("Token :%v", token)
+	// start sse
 	var arrParam []string
 	if len(c.Param("p1")) > 0 {
 		arrParam = append(arrParam, c.Param("p1"))
@@ -162,6 +175,17 @@ func sseStreaming(c *gin.Context) { // sse streaming
 }
 
 func websocketStreaming(c *gin.Context) {
+	// validate token
+	token, err := jwtToken.Validate(c.GetHeader("Authorization"))
+	if err != nil {
+		c.JSON(401, gin.H{
+			"code":    401,
+			"message": "Token invalid",
+		})
+		return
+	}
+	log.Printf("Token :%v", token)
+	// start ws
 	w, r := c.Writer, c.Request
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {

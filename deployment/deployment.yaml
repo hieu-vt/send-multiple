@@ -23,6 +23,10 @@ spec:
           volumeMounts:
           - mountPath: /app/config
             name: config-go-streaming-api
+          - mountPath: /app/config
+            name: config-jwtrs256-key-pem
+          - mountPath: /app/config
+            name: config-jwtrs256-key
       imagePullSecrets:
         - name: gcr-json-key
       volumes:
@@ -32,6 +36,18 @@ spec:
             items:
               - key: config
                 path: streaming-api.json
+        - name: config-jwtrs256-key-pem
+          configMap:
+            name: config-jwtrs256-key-pem
+            items:
+              - key: config
+                path: config-jwtrs256-key-pem
+        - name: config-jwtrs256-key
+          configMap:
+            name: config-jwtrs256-key
+            items:
+              - key: config
+                path: config-jwtrs256-key
       # [END volumes]
 ---
 apiVersion: v1
