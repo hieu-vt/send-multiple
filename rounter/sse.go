@@ -20,7 +20,7 @@ func SseHandler(checkJwt bool, jwtToken model.JWT, channelMan *model.ChannelMana
 			tokenOutput, jwt, err := jwtToken.Validate(c)
 			token = tokenOutput
 			if err != nil {
-				log.Printf("Jwt token err [%s]: %s", fmt.Sprintf("%v", err), jwt)
+				log.Printf("Jwt token err [%s] | %s | %s", fmt.Sprintf("%v", err), c.FullPath(), jwt)
 				c.JSON(401, gin.H{
 					"code":    401,
 					"message": fmt.Sprintf("%v", err),
