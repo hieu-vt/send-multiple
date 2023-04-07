@@ -141,6 +141,7 @@ func (m *ChannelManager) DeleteBroadcast(channelId string) {
 
 func (m *ChannelManager) Submit(channelId string, text string) {
 	s := strings.Split(channelId, ",")
+	s = append(s, "ALL:ALL")
 	// Send message to all listener
 	for i := 0; i < len(s); i++ {
 		msg := &Message{
