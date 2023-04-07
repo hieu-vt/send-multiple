@@ -17,6 +17,8 @@ Library:
 ├── build.sh
 ├── config
 │   └── streaming-api.json
+│   └── config-jwtrs256-key
+│   └── config-jwtrs256-key-pem
 ├── deployment
 │   ├── config-map-go-streaming.yaml
 │   └── deployment.yaml
@@ -26,6 +28,13 @@ Library:
 ├── model
 │   ├── channels.go
 │   └── config.go
+│   └── ping.go
+│   └── token.go
+├── rounter
+│   ├── option.go
+│   └── sse.go
+│   └── status.go
+│   └── websocket.go
 └── utils
     └── helper.go
 ```
@@ -57,20 +66,21 @@ Library:
 
 # INFO
 - /metrics : Get metrics prometheus
-- /status : Get status streaming
+- /status : Get status streaming of all instances sse running
 
 # SSE STREAMING
-- /streaming/:path/:channel : get sse streaming by path and channel
-- Example:
-    - /streaming/price/anz.asx,bhp.asx -> recieve data from redis pub/sub: price:anz.asx and price:bhp.asx
-    - /streaming/account/anz.asx,bhp.asx -> recieve data from redis pub/sub: account:anz.asx and account:bhp.asx
+- Multil level subscriber from reids pub/sub then send to client
+- /:p1/:p2/:p3/:p4/:p5
+- Description:
+    - /:p1/:p2/:p3/:p4 -> prefix channel in redis (Example: /v1/annoucement/news/asx)
+    - /:p5 -> channel ID, separate by comma (Example: ANZ.ASX,BHP.ASX)
+    - sub redis channel1: v1:annoucement:news:asx:ANZ.ASX
+    - sub redis channel2: v1:annoucement:news:asx:BHP.ASX
+    - when have changed in channel1 or channel2, data will send to client
 
 # WS STREAMING
-- /ws-streaming/:path/:channel : get sse streaming by path and channel
-- Example:
-    - /ws-streaming/price/anz.asx,bhp.asx -> recieve data from redis pub/sub: price:anz.asx and price:bhp.asx
-    - /ws-streaming/account/anz.asx,bhp.asx -> recieve data from redis pub/sub: account:anz.asx  and account:bhp.asx
-
+- like sse streaming but using /ws befor sse path
+- /ws/:p1/:p2/:p3/:p4/:p5
 
 # TESTING
 - Install package wscat

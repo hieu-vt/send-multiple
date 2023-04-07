@@ -30,48 +30,48 @@ func main() {
 	log.Printf("Redis enpoint: %s", config.Redis.Host)
 	channelManager = model.NewChannelManager() // Init channel manager
 	prefix := config.PrefixChannel
-	// Config redis
+	// Init redis connection
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     config.Redis.Host + ":" + config.Redis.Port, // Address or redis. Should separate redis to improve performance
 		Password: config.Redis.Password,                       // Password
 		DB:       config.Redis.Database,                       // Database
 	})
-	channel := "*"
-	if len(prefix) > 0 {
-		channel = fmt.Sprintf("%s:*", prefix)
-	}
-	subscribeRedis := rdb.PSubscribe(context.Background(), channel) // Subscribe all channel in redis pubsub
+	// Get message from redis pub/sub
 	go func() {
-		// Get message from redis pub/sub
-		for msg := range subscribeRedis.Channel() { // Listen redis pubsub
+		channel := "*"
+		if len(prefix) > 0 {
+			channel = fmt.Sprintf("%s:*", prefix)
+		}
+		subscribeRedis := rdb.PSubscribe(context.Background(), channel) // Subscribe all channel in redis pubsub
+		for msg := range subscribeRedis.Channel() {                     // Listen redis pubsub
 			go utils.SendData(channelManager, msg, prefix) // Send data to sse
 		}
 	}()
+	// Heartbeat
 	go func() {
-		// Heartbeat
 		ticker := time.Tick(time.Duration(10000 * time.Millisecond)) // Interval 10s send heartbeat
 		for {
 			<-ticker
 			go utils.SendPing(channelManager, sseInstanceId) // Send heartbeat
 		}
 	}()
+	// Status
 	go func() {
-		// Status
 		ticker := time.Tick(time.Duration(20000 * time.Millisecond)) // Interval 10s send status
 		for {
 			<-ticker
 			go utils.SendStatus(channelManager, sseInstanceId, rdb, prefix) // Send status
 		}
 	}()
-
-	router := gin.New() // Init GIN rounter
+	// Init GIN rounter
+	router := gin.New()
 	// Metris
 	metrics := ginmetrics.GetMonitor()
 	metrics.SetMetricPath("/metrics")
 	metrics.SetSlowTime(2)
 	metrics.SetDuration([]float64{0.1, 0.3, 1.2, 5, 10})
 	metrics.Use(router)
-	// Custom Logger
+	// Logging gin
 	router.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
 		log.Printf("| %d | %s | %s | %s | %s | %s | %s\n",
 			param.StatusCode,
