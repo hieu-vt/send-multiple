@@ -10,9 +10,9 @@ data:
         {
             "port": "80",
             "redis": {
-                "host": "redis-streaming-market-service.default",
+                "host": "redis-pubsub-streaming-service.default",
                 "port": "6379",
-                "db": 1,
+                "db": 0,
                 "password": "7e49302b475067e7177aef16f015d753"
             },
             "prefix_channel": "",

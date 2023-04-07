@@ -70,6 +70,10 @@ func GetPrefixStreamingByGinContext(c *gin.Context) (prefix string, key string) 
 		accounts := strings.Split(c.Query("account"), ",")
 		arrCode = append(arrCode, accounts...)
 	}
+	if len(c.Query("account_id")) > 0 {
+		accounts := strings.Split(c.Query("account_id"), ",")
+		arrCode = append(arrCode, accounts...)
+	}
 	if len(arrCode) <= 0 {
 		return getPrefixStreaming(arrParam)
 	}
