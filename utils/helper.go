@@ -52,7 +52,7 @@ func SendData(channelManager *model.ChannelManager, msg *redis.Message, prefix s
 	if len(prefix) != 0 {
 		channel = strings.Replace(msg.Channel, fmt.Sprintf("%s:", prefix), "", 1)
 	}
-	channelManager.Submit(channel, msg.Payload)
+	channelManager.Submit(channel, fmt.Sprintf(" %s", msg.Payload))
 }
 
 func SendDataString(channelManager *model.ChannelManager, channel string, msg string) {
@@ -71,7 +71,7 @@ func SendPing(channelManager *model.ChannelManager, sseInstanceId string) {
 		Id:   "PING",
 	}
 	s, _ := json.Marshal(pingObj)
-	channelManager.Submit("PING", string(s))
+	channelManager.Submit("PING", fmt.Sprintf(" %s", string(s)))
 }
 
 func SendStatus(channelManager *model.ChannelManager, sseInstanceId string, rdb *redis.Client, prefix string) {
