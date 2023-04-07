@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"go-streaming/model"
+	"log"
 	"os"
 	"strings"
 	"time"
@@ -35,12 +36,15 @@ func LoadConfiguration(file string) (model.Config, error) {
 	jsonParser := json.NewDecoder(configFile)
 	err = jsonParser.Decode(&config)
 	defer configFile.Close()
+	log.Printf("config %s, %v", file, config)
 	return config, err
 }
 
 func LoadFile(file string) (string, error) {
 	dat, err := os.ReadFile(file)
-	return string(dat), err
+	content := string(dat)
+	log.Printf("config %s, %v", file, content)
+	return content, err
 }
 
 func SendData(channelManager *model.ChannelManager, msg *redis.Message, prefix string) {

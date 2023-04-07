@@ -9,4 +9,5 @@ type Config struct {
 	} `json:"redis"`
 	Port          string `json:"port"`
 	PrefixChannel string `json:"prefix_channel"`
+	CheckJwt      bool   `json:"check_jwt"`
 }
