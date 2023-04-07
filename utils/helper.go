@@ -44,6 +44,9 @@ func GetPrefixStreamingByGinContext(c *gin.Context) (prefix string, key string) 
 	if len(c.Param("p5")) > 0 {
 		arrParam = append(arrParam, c.Param("p5"))
 	}
+	if len(c.Param("p6")) > 0 {
+		arrParam = append(arrParam, c.Param("p6"))
+	}
 	var arrCode []string
 	if len(c.Query("organisation_code")) > 0 {
 		orgs := strings.Split(c.Query("organisation_code"), ",")

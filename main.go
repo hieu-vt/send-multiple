@@ -85,17 +85,20 @@ func main() {
 		return ""
 	}))
 	// Generality SSE
-	router.GET("/:p1/:p2/:p3/:p4/:p5", rounter.SseHandler(config.CheckJwt, jwtToken, channelManager)) // Sse
-	router.GET("/:p1/:p2/:p3/:p4", rounter.SseHandler(config.CheckJwt, jwtToken, channelManager))     // Sse
-	router.GET("/:p1/:p2/:p3", rounter.SseHandler(config.CheckJwt, jwtToken, channelManager))         // Sse
+	router.GET("/:p1/:p2/:p3/:p4/:p5/:p6", rounter.SseHandler(config.CheckJwt, jwtToken, channelManager)) // Sse
+	router.GET("/:p1/:p2/:p3/:p4/:p5", rounter.SseHandler(config.CheckJwt, jwtToken, channelManager))     // Sse
+	router.GET("/:p1/:p2/:p3/:p4", rounter.SseHandler(config.CheckJwt, jwtToken, channelManager))         // Sse
+	router.GET("/:p1/:p2/:p3", rounter.SseHandler(config.CheckJwt, jwtToken, channelManager))             // Sse
 	// Generality Options
-	router.OPTIONS("/:p1/:p2/:p3/:p4/:p5", rounter.Options) // Options
-	router.OPTIONS("/:p1/:p2/:p3/:p4", rounter.Options)     // Options
-	router.OPTIONS("/:p1/:p2/:p3", rounter.Options)         // Options
+	router.OPTIONS("/:p1/:p2/:p3/:p4/:p5/p6", rounter.Options) // Options
+	router.OPTIONS("/:p1/:p2/:p3/:p4/:p5", rounter.Options)    // Options
+	router.OPTIONS("/:p1/:p2/:p3/:p4", rounter.Options)        // Options
+	router.OPTIONS("/:p1/:p2/:p3", rounter.Options)            // Options
 	// Generality Websocket
-	router.GET("/ws/:p1/:p2/:p3/:p4/:p5", rounter.WebsocketHandler(config.CheckJwt, jwtToken, channelManager)) // Websocket
-	router.GET("/ws//:p1/:p2/:p3/:p4", rounter.WebsocketHandler(config.CheckJwt, jwtToken, channelManager))    // Websocket
-	router.GET("/ws//:p1/:p2/:p3", rounter.WebsocketHandler(config.CheckJwt, jwtToken, channelManager))        // Websocket
+	router.GET("/ws/:p1/:p2/:p3/:p4/:p5/:p6", rounter.WebsocketHandler(config.CheckJwt, jwtToken, channelManager)) // Websocket
+	router.GET("/ws/:p1/:p2/:p3/:p4/:p5", rounter.WebsocketHandler(config.CheckJwt, jwtToken, channelManager))     // Websocket
+	router.GET("/ws//:p1/:p2/:p3/:p4", rounter.WebsocketHandler(config.CheckJwt, jwtToken, channelManager))        // Websocket
+	router.GET("/ws//:p1/:p2/:p3", rounter.WebsocketHandler(config.CheckJwt, jwtToken, channelManager))            // Websocket
 	// Status
 	router.GET("/status", rounter.StatusHandler(channelManager)) // Status
 	// Test
