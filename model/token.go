@@ -2,7 +2,6 @@ package model
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/dgrijalva/jwt-go"
@@ -21,7 +20,7 @@ func NewJWT(privateKey []byte, publicKey []byte) JWT {
 	}
 }
 
-func (j JWT) Validate(c *gin.Context) (interface{}, error) {
+func (j JWT) Validate(c *gin.Context) (jwt.MapClaims, string, error) {
 	var auth string
 	if len(c.GetHeader("Authorization")) > 0 {
 		auth = c.GetHeader("Authorization")
@@ -35,7 +34,7 @@ func (j JWT) Validate(c *gin.Context) (interface{}, error) {
 	token := strings.TrimPrefix(auth, "Bearer ")
 	key, err := jwt.ParseRSAPublicKeyFromPEM(j.publicKey)
 	if err != nil {
-		return "", fmt.Errorf("validate: parse key: %w", err)
+		return nil, token, fmt.Errorf("validate: parse key: %w", err)
 	}
 	tok, err := jwt.Parse(token, func(jwtToken *jwt.Token) (interface{}, error) {
 		if _, ok := jwtToken.Method.(*jwt.SigningMethodRSA); !ok {
@@ -44,12 +43,11 @@ func (j JWT) Validate(c *gin.Context) (interface{}, error) {
 		return key, nil
 	})
 	if err != nil {
-		log.Printf("Validate token: %s, %v", token, err)
-		return nil, fmt.Errorf("validate: %w", err)
+		return nil, token, fmt.Errorf("validate: %w", err)
 	}
 	claims, ok := tok.Claims.(jwt.MapClaims)
 	if !ok || !tok.Valid {
-		return nil, fmt.Errorf("validate: invalid")
+		return nil, token, fmt.Errorf("validate: invalid")
 	}
-	return claims, nil
+	return claims, token, nil
 }

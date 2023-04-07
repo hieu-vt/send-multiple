@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
@@ -24,15 +25,19 @@ var upgrader = websocket.Upgrader{
 func WebsocketHandler(checkJwt bool, jwtToken model.JWT, channelMan *model.ChannelManager) gin.HandlerFunc {
 	fn := func(c *gin.Context) {
 		// validate token
-		token, err := jwtToken.Validate(c)
-		if err != nil {
-			c.JSON(401, gin.H{
-				"code":    401,
-				"message": "Token invalid",
-			})
-			return
+		var token jwt.MapClaims
+		if checkJwt {
+			tokenOutput, jwt, err := jwtToken.Validate(c)
+			token = tokenOutput
+			if err != nil {
+				log.Printf("Jwt token err: %s", jwt)
+				c.JSON(401, gin.H{
+					"code":    401,
+					"message": "Token invalid",
+				})
+				return
+			}
 		}
-		log.Printf("Token :%v", token)
 		// start ws
 		w, r := c.Writer, c.Request
 		ws, err := upgrader.Upgrade(w, r, nil)
@@ -44,7 +49,7 @@ func WebsocketHandler(checkJwt bool, jwtToken model.JWT, channelMan *model.Chann
 		// get parameters
 		prefix, keys := utils.GetPrefixStreamingByGinContext(c)
 		sseId := uuid.New() // ID of sse connection
-		log.Printf("WEBSOCKET | %s | %s/%s", sseId, prefix, keys)
+		log.Printf("Connect Websocket | %s | %s | %s | %s | %s", token["iss"], token["device_id"], sseId, prefix, keys)
 		channelMan.WsTotal += 1
 		channelMan.WsLive += 1
 		// Create new listener
@@ -61,7 +66,7 @@ func WebsocketHandler(checkJwt bool, jwtToken model.JWT, channelMan *model.Chann
 				break
 			}
 		}
-		log.Printf("DISCONNECT WEBSOCKET | %s | %s - %s", sseId, prefix, keys)
+		log.Printf("Connect Websocket | %s | %s | %s | %s | %s", token["iss"], token["device_id"], sseId, prefix, keys)
 		channelMan.WsClosed += 1
 		channelMan.WsLive -= 1
 	}
