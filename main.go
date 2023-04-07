@@ -123,11 +123,11 @@ func options(c *gin.Context) { // options
 
 func sseStreaming(c *gin.Context) { // sse streaming
 	// validate token
-	token, err := jwtToken.Validate(c.GetHeader("Authorization"))
+	token, err := jwtToken.Validate(c)
 	if err != nil {
 		c.JSON(401, gin.H{
 			"code":    401,
-			"message": "Token invalid",
+			"message": fmt.Sprintf("%v", err),
 		})
 		return
 	}
@@ -176,7 +176,7 @@ func sseStreaming(c *gin.Context) { // sse streaming
 
 func websocketStreaming(c *gin.Context) {
 	// validate token
-	token, err := jwtToken.Validate(c.GetHeader("Authorization"))
+	token, err := jwtToken.Validate(c)
 	if err != nil {
 		c.JSON(401, gin.H{
 			"code":    401,
