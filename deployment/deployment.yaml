@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: go-streaming-api
-  namespace: proto-actor-sample
+  namespace: sse-streaming
   labels:
     app: go-streaming-api
 spec:
@@ -54,7 +54,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: service-go-streaming-api
-  namespace: proto-actor-sample
+  namespace: sse-streaming
   labels:
     app: go-streaming-api
 spec:
@@ -70,7 +70,7 @@ apiVersion: autoscaling/v1
 kind: HorizontalPodAutoscaler
 metadata:
   name: go-streaming-api
-  namespace: proto-actor-sample
+  namespace: sse-streaming
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
