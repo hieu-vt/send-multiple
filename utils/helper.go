@@ -19,11 +19,59 @@ func remove(s []string, i int) []string {
 	return s[:len(s)-1]
 }
 
-func GetPrefixStreaming(arrParams []string) (prefix string, key string) {
+func getPrefixStreaming(arrParams []string) (prefix string, key string) {
 	var lastIndex = len(arrParams) - 1
 	key = arrParams[lastIndex]
 	arrayx := remove(arrParams, lastIndex)
 	prefix = strings.Join(arrayx[:], ":")
+	return prefix, key
+}
+
+func GetPrefixStreamingByGinContext(c *gin.Context) (prefix string, key string) {
+	var arrParam []string
+	if len(c.Param("p1")) > 0 {
+		arrParam = append(arrParam, c.Param("p1"))
+	}
+	if len(c.Param("p2")) > 0 {
+		arrParam = append(arrParam, c.Param("p2"))
+	}
+	if len(c.Param("p3")) > 0 {
+		arrParam = append(arrParam, c.Param("p3"))
+	}
+	if len(c.Param("p4")) > 0 {
+		arrParam = append(arrParam, c.Param("p4"))
+	}
+	if len(c.Param("p5")) > 0 {
+		arrParam = append(arrParam, c.Param("p5"))
+	}
+	var arrCode []string
+	if len(c.Query("organisation_code")) > 0 {
+		orgs := strings.Split(c.Query("organisation_code"), ",")
+		for i := 0; i < len(orgs); i++ {
+			arrCode = append(arrCode, fmt.Sprintf("org_%s", orgs[i]))
+		}
+	}
+	if len(c.Query("branch_code")) > 0 {
+		branchs := strings.Split(c.Query("branch_code"), ",")
+		for i := 0; i < len(branchs); i++ {
+			arrCode = append(arrCode, fmt.Sprintf("branch_%s", branchs[i]))
+		}
+	}
+	if len(c.Query("advisor_code")) > 0 {
+		advisors := strings.Split(c.Query("advisor_code"), ",")
+		for i := 0; i < len(advisors); i++ {
+			arrCode = append(arrCode, fmt.Sprintf("advisor_%s", advisors[i]))
+		}
+	}
+	if len(c.Query("account")) > 0 {
+		accounts := strings.Split(c.Query("account"), ",")
+		arrCode = append(arrCode, accounts...)
+	}
+	if len(arrCode) <= 0 {
+		return getPrefixStreaming(arrParam)
+	}
+	prefix = strings.Join(arrParam[:], ":")
+	key = strings.Join(arrCode[:], ",")
 	return prefix, key
 }
 

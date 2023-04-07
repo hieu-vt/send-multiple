@@ -29,6 +29,9 @@ func (j JWT) Validate(c *gin.Context) (interface{}, error) {
 	if len(c.Query("token")) > 0 {
 		auth = c.Query("token")
 	}
+	if len(c.Query("access_token")) > 0 {
+		auth = c.Query("access_token")
+	}
 	token := strings.TrimPrefix(auth, "Bearer ")
 	key, err := jwt.ParseRSAPublicKeyFromPEM(j.publicKey)
 	if err != nil {

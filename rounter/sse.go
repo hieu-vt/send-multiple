@@ -26,23 +26,7 @@ func SseHandler(checkJwt bool, jwtToken model.JWT, channelMan *model.ChannelMana
 			log.Printf("Token :%v", token)
 		}
 		// start sse
-		var arrParam []string
-		if len(c.Param("p1")) > 0 {
-			arrParam = append(arrParam, c.Param("p1"))
-		}
-		if len(c.Param("p2")) > 0 {
-			arrParam = append(arrParam, c.Param("p2"))
-		}
-		if len(c.Param("p3")) > 0 {
-			arrParam = append(arrParam, c.Param("p3"))
-		}
-		if len(c.Param("p4")) > 0 {
-			arrParam = append(arrParam, c.Param("p4"))
-		}
-		if len(c.Param("p5")) > 0 {
-			arrParam = append(arrParam, c.Param("p5"))
-		}
-		prefix, keys := utils.GetPrefixStreaming(arrParam)
+		prefix, keys := utils.GetPrefixStreamingByGinContext(c)
 		sseId := uuid.New() // ID of sse connection
 		log.Printf("SSE | %s | %s - %s", sseId, prefix, keys)
 		channelMan.SseTotal += 1

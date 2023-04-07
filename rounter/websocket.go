@@ -42,23 +42,7 @@ func WebsocketHandler(checkJwt bool, jwtToken model.JWT, channelMan *model.Chann
 		}
 		defer ws.Close()
 		// get parameters
-		var arrParam []string
-		if len(c.Param("p1")) > 0 {
-			arrParam = append(arrParam, c.Param("p1"))
-		}
-		if len(c.Param("p2")) > 0 {
-			arrParam = append(arrParam, c.Param("p2"))
-		}
-		if len(c.Param("p3")) > 0 {
-			arrParam = append(arrParam, c.Param("p3"))
-		}
-		if len(c.Param("p4")) > 0 {
-			arrParam = append(arrParam, c.Param("p4"))
-		}
-		if len(c.Param("p5")) > 0 {
-			arrParam = append(arrParam, c.Param("p5"))
-		}
-		prefix, keys := utils.GetPrefixStreaming(arrParam)
+		prefix, keys := utils.GetPrefixStreamingByGinContext(c)
 		sseId := uuid.New() // ID of sse connection
 		log.Printf("WEBSOCKET | %s | %s/%s", sseId, prefix, keys)
 		channelMan.WsTotal += 1
