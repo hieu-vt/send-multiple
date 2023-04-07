@@ -73,34 +73,31 @@ func main() {
 	metrics.Use(router)
 	// Custom Logger
 	router.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
-		return fmt.Sprintf("%s |%s %d %s| %s |%s %s %s %s | %s | %s | %s\n",
-			param.TimeStamp.Format(time.RFC1123),
-			param.StatusCodeColor(),
+		log.Printf("| %d | %s | %s | %s | %s | %s | %s\n",
 			param.StatusCode,
-			param.ResetColor(),
 			param.ClientIP,
-			param.MethodColor(),
 			param.Method,
-			param.ResetColor(),
 			param.Path,
 			param.Latency,
 			param.Request.UserAgent(),
 			param.ErrorMessage,
 		)
+		return ""
 	}))
 	// Generality SSE
-	router.GET("/:p1/:p2/:p3/:p4/:p5", rounter.SseHandler(config.CheckJwt, jwtToken, channelManager)) // Ping sse web
-	router.OPTIONS("/:p1/:p2/:p3/:p4/:p5", rounter.Options)                                           // sse web OPTIONS
-	router.GET("/:p1/:p2/:p3/:p4", rounter.SseHandler(config.CheckJwt, jwtToken, channelManager))     // Ping sse web
-	router.OPTIONS("/:p1/:p2/:p3/:p4", rounter.Options)                                               // sse web OPTIONS
-	router.GET("/:p1/:p2/:p3", rounter.SseHandler(config.CheckJwt, jwtToken, channelManager))         // Ping sse web
-	router.OPTIONS("/:p1/:p2/:p3", rounter.Options)                                                   // sse web OPTIONS
+	router.GET("/:p1/:p2/:p3/:p4/:p5", rounter.SseHandler(config.CheckJwt, jwtToken, channelManager)) // Sse
+	router.GET("/:p1/:p2/:p3/:p4", rounter.SseHandler(config.CheckJwt, jwtToken, channelManager))     // Sse
+	router.GET("/:p1/:p2/:p3", rounter.SseHandler(config.CheckJwt, jwtToken, channelManager))         // Sse
+	// Generality Options
+	router.OPTIONS("/:p1/:p2/:p3/:p4/:p5", rounter.Options) // Options
+	router.OPTIONS("/:p1/:p2/:p3/:p4", rounter.Options)     // Options
+	router.OPTIONS("/:p1/:p2/:p3", rounter.Options)         // Options
 	// Generality Websocket
-	router.GET("/ws/:p1/:p2/:p3/:p4/:p5", rounter.WebsocketHandler(config.CheckJwt, jwtToken, channelManager)) // Ping sse web
-	router.GET("/ws//:p1/:p2/:p3/:p4", rounter.WebsocketHandler(config.CheckJwt, jwtToken, channelManager))    // Ping sse web
-	router.GET("/ws//:p1/:p2/:p3", rounter.WebsocketHandler(config.CheckJwt, jwtToken, channelManager))        // Ping sse web
+	router.GET("/ws/:p1/:p2/:p3/:p4/:p5", rounter.WebsocketHandler(config.CheckJwt, jwtToken, channelManager)) // Websocket
+	router.GET("/ws//:p1/:p2/:p3/:p4", rounter.WebsocketHandler(config.CheckJwt, jwtToken, channelManager))    // Websocket
+	router.GET("/ws//:p1/:p2/:p3", rounter.WebsocketHandler(config.CheckJwt, jwtToken, channelManager))        // Websocket
 	// Status
-	router.GET("/status", rounter.StatusHandler(channelManager)) // status streaming
+	router.GET("/status", rounter.StatusHandler(channelManager)) // Status
 	// Start service
 	log.Printf("listen port: %s", config.Port)
 	router.Run(":" + config.Port)
