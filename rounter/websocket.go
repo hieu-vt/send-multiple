@@ -30,10 +30,10 @@ func WebsocketHandler(checkJwt bool, jwtToken model.JWT, channelMan *model.Chann
 			tokenOutput, jwt, err := jwtToken.Validate(c)
 			token = tokenOutput
 			if err != nil {
-				log.Printf("Jwt token err: %s", jwt)
+				log.Printf("Jwt token err [%s]: %s", fmt.Sprintf("%v", err), jwt)
 				c.JSON(401, gin.H{
 					"code":    401,
-					"message": "Token invalid",
+					"message": fmt.Sprintf("%v", err),
 				})
 				return
 			}
