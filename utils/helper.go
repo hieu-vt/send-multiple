@@ -28,7 +28,7 @@ func GetPrefixStreaming(arrParams []string) (prefix string, key string) {
 }
 
 func LoadConfiguration(fileConfig string) (model.Config, error) {
-	cloudPath := fmt.Sprintf("/etc/equix/%s", fileConfig)
+	cloudPath := fmt.Sprintf("/etc/equix/%s/%s", fileConfig, fileConfig)
 	localPath := fmt.Sprintf("config/%s.json", fileConfig)
 	file := cloudPath
 	_, error := os.Stat(cloudPath)
@@ -48,7 +48,7 @@ func LoadConfiguration(fileConfig string) (model.Config, error) {
 }
 
 func LoadFile(fileConfig string) (string, error) {
-	cloudPath := fmt.Sprintf("/etc/equix/%s/fileConfig", fileConfig)
+	cloudPath := fmt.Sprintf("/etc/equix/%s/%s", fileConfig, fileConfig)
 	localPath := fmt.Sprintf("config/%s", fileConfig)
 	file := cloudPath
 	_, error := os.Stat(cloudPath)

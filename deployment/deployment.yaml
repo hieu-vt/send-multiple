@@ -17,16 +17,16 @@ spec:
     spec:
       containers:
         - name: go-streaming-api
-          image: gcr.io/quant-edge-213907/equix/service/go-streaming:23.0407.1105_30cb171
+          image: gcr.io/quant-edge-213907/equix/service/go-streaming:23.0407.1141_d7f7d2a
           ports:
             - containerPort: 80
           volumeMounts:
-          - mountPath: /etc/equix/config-go-streaming-api
-            name: config-go-streaming-api
-          - mountPath: /etc/equix/config-jwtrs256-key-pem
-            name: config-jwtrs256-key-pem
-          - mountPath: /etc/equix/config-jwtrs256-key
-            name: config-jwtrs256-key
+            - mountPath: /etc/equix/config-go-streaming-api
+              name: config-go-streaming-api
+            - mountPath: /etc/equix/config-jwtrs256-key-pem
+              name: config-jwtrs256-key-pem
+            - mountPath: /etc/equix/config-jwtrs256-key
+              name: config-jwtrs256-key
       imagePullSecrets:
         - name: gcr-json-key
       volumes:
@@ -35,7 +35,7 @@ spec:
             name: config-go-streaming-api
             items:
               - key: config
-                path: streaming-api.json
+                path: config-go-streaming-api
         - name: config-jwtrs256-key-pem
           configMap:
             name: config-jwtrs256-key-pem
