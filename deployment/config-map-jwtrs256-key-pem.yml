@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-jwtrs256-key-pem
+  namespace: proto-actor-sample
+  labels:
+    name: config-jwtrs256-key-pem
+data:
+  config: |-
+      -----BEGIN PUBLIC KEY-----
+      MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAwRo+bNRDRET0BRUyvjnE
+      TveXj0s3/em//Z4q3Da6uyswOhVrrTlzmvoYWu1nc5JEnYpD7WkxwFJuHNUtMtqE
+      NEwY+L36UPKlIeoDcBvj2qStMEt8enxMNynAgJhaq2Yv7X4Q5ujUSrUN8tXC/R8a
+      OtVHCy+yfq1n6edshCCciJIcCePOSxlUnK/MvqkTJNV73CXQ8I7U9+lKQJ46RFgw
+      yTHJOHCx84ukw48f13qcGzJwYeuw8OYsYtTs8oY/c77aiJKZ6U5a7S1uxlhp3m2g
+      TsG23zL5k2zROqeR9oTvjjJlZN7uHOYnSccliA3A0TRI+/l56RrJM/Gz6krL8vNu
+      p7OoJEcZGhKFMu8GFUhnhcWtUPeB2VgSElchE+Z6T9gPtimU/05YpsG5meCzjXo7
+      2yLQMHLPUpnxGYTakG+Vm4WUvH315LFwz8xpzPHHMlakcFwaBR4X0pLTf8/sLayB
+      ioZF8WCNkQ93YCQdyTqCR+RP+P4Xbe9koK9kXuHS1WHBMor8
+      VWIOT4X1kirT0tOT
+      BPGkfMtsQjWSVdlGfYIssNGO/8ZMEgVJaUfXc3q4d5cr+0LHlyK/I434FaJXGLsM
+      Wa1PdMq/zpLRz6Vb5t6uKe6/yTjbGzS44BNHTDZ17XbYofd6uW18dSdRQj3yaaYE
+      rrJ1m5eBrfGUh7dlbqK0vYECAwEAAQ==
+      -----END PUBLIC KEY-----
+
+---

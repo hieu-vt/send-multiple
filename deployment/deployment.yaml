@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: go-streaming-api
-  namespace: sse-streaming
+  namespace: proto-actor-sample
   labels:
     app: go-streaming-api
 spec:
@@ -17,15 +17,15 @@ spec:
     spec:
       containers:
         - name: go-streaming-api
-          image: gcr.io/quant-edge-213907/equix/service/go-streaming:23.0317.1648_8235608
+          image: gcr.io/quant-edge-213907/equix/service/go-streaming:23.0407.1105_30cb171
           ports:
             - containerPort: 80
           volumeMounts:
-          - mountPath: /app/config
+          - mountPath: /etc/equix/config-go-streaming-api
             name: config-go-streaming-api
-          - mountPath: /app/config
+          - mountPath: /etc/equix/config-jwtrs256-key-pem
             name: config-jwtrs256-key-pem
-          - mountPath: /app/config
+          - mountPath: /etc/equix/config-jwtrs256-key
             name: config-jwtrs256-key
       imagePullSecrets:
         - name: gcr-json-key
@@ -54,7 +54,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: service-go-streaming-api
-  namespace: sse-streaming
+  namespace: proto-actor-sample
   labels:
     app: go-streaming-api
 spec:
@@ -70,7 +70,7 @@ apiVersion: autoscaling/v1
 kind: HorizontalPodAutoscaler
 metadata:
   name: go-streaming-api
-  namespace: sse-streaming
+  namespace: proto-actor-sample
 spec:
   scaleTargetRef:
     apiVersion: apps/v1

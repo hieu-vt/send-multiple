@@ -27,7 +27,14 @@ func GetPrefixStreaming(arrParams []string) (prefix string, key string) {
 	return prefix, key
 }
 
-func LoadConfiguration(file string) (model.Config, error) {
+func LoadConfiguration(fileConfig string) (model.Config, error) {
+	cloudPath := fmt.Sprintf("/etc/equix/%s", fileConfig)
+	localPath := fmt.Sprintf("config/%s.json", fileConfig)
+	file := cloudPath
+	_, error := os.Stat(cloudPath)
+	if error != nil {
+		file = localPath
+	}
 	var config model.Config
 	configFile, err := os.Open(file)
 	if err != nil {
@@ -40,7 +47,14 @@ func LoadConfiguration(file string) (model.Config, error) {
 	return config, err
 }
 
-func LoadFile(file string) (string, error) {
+func LoadFile(fileConfig string) (string, error) {
+	cloudPath := fmt.Sprintf("/etc/equix/%s/fileConfig", fileConfig)
+	localPath := fmt.Sprintf("config/%s", fileConfig)
+	file := cloudPath
+	_, error := os.Stat(cloudPath)
+	if error != nil {
+		file = localPath
+	}
 	dat, err := os.ReadFile(file)
 	content := string(dat)
 	log.Printf("config %s, %v", file, content)

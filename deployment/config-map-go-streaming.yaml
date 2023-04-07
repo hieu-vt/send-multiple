@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
     name: config-go-streaming-api
-    namespace: sse-streaming
+    namespace: proto-actor-sample
     labels:
         name: config-go-streaming-api
 data:
@@ -15,5 +15,6 @@ data:
                 "db": 1,
                 "password": "7e49302b475067e7177aef16f015d753"
             },
-            "prefix_channel": "v1:streaming"
+            "prefix_channel": "",
+            "check_jwt": false
         }

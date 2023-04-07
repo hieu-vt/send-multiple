@@ -1,0 +1,60 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: config-jwtrs256-key
+    namespace: proto-actor-sample
+    labels:
+        name: config-jwtrs256-key
+data:
+    config: |-
+        -----BEGIN RSA PRIVATE KEY-----
+        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
+        -----END RSA PRIVATE KEY-----

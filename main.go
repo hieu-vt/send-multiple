@@ -21,10 +21,10 @@ var channelManager *model.ChannelManager       // channel manager
 
 func main() {
 	log.SetFlags(log.Ldate | log.Lmsgprefix | log.Ltime | log.Lshortfile)
-	gin.SetMode(gin.ReleaseMode)                                      // Set release mode
-	config, _ := utils.LoadConfiguration("config/streaming-api.json") // Get config streaming
-	prvKey, _ := utils.LoadFile("config/config-jwtrs256-key")
-	pubKey, _ := utils.LoadFile("config/config-jwtrs256-key-pem")
+	gin.SetMode(gin.ReleaseMode)                                 // Set release mode
+	config, _ := utils.LoadConfiguration("config-streaming-api") // Get config streaming
+	prvKey, _ := utils.LoadFile("config-jwtrs256-key")
+	pubKey, _ := utils.LoadFile("config-jwtrs256-key-pem")
 	jwtToken = model.NewJWT([]byte(prvKey), []byte(pubKey))
 
 	log.Printf("Redis enpoint: %s", config.Redis.Host)
