@@ -4,7 +4,7 @@ import (
 	"log"
 	"strings"
 
-	"github.com/dustin/go-broadcast"
+	"go-streaming/broadcast"
 )
 
 type Message struct {

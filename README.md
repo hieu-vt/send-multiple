@@ -1,7 +1,13 @@
-# GO STREAMING
+# GO STREAMING  
 - Recieve data from Redis Pub/sub, then push data to client.
 - Should separate redis to improve performance
 - Support SSE and WEBSOCKET
+
+Start:
+```
+go mod init go-streaming
+go mod tidy
+```
 
 Library:
 - gin: https://github.com/gin-gonic/gin

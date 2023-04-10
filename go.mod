@@ -4,7 +4,6 @@ go 1.20
 
 require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
-	github.com/dustin/go-broadcast v0.0.0-20211018055107-71439988bd91
 	github.com/gin-gonic/gin v1.9.0
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/google/uuid v1.3.0
