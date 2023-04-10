@@ -3,6 +3,8 @@ Package broadcast provides pubsub of messages over channels.
 
 A provider has a Broadcaster into which it Submits messages and into
 which subscribers Register to pick up those messages.
+
+This code base on package https://github.com/dustin/go-broadcast
 */
 package broadcast
 
