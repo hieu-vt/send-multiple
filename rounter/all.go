@@ -16,9 +16,10 @@ func AllHandler(checkJwt bool, jwtToken model.JWT, channelMan *model.ChannelMana
 		// validate token
 		var token jwt.MapClaims
 		if checkJwt {
-			tokenOutput, _, err := jwtToken.Validate(c)
+			tokenOutput, jwt, err := jwtToken.Validate(c)
 			token = tokenOutput
 			if err != nil {
+				log.Printf("Jwt token err [%s] | %s | %s", fmt.Sprintf("%v", err), c.Request.RequestURI, jwt)
 				c.JSON(401, gin.H{
 					"code":    401,
 					"message": fmt.Sprintf("%v", err),
