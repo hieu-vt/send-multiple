@@ -105,7 +105,7 @@ func main() {
 	// Status
 	router.GET("/status", rounter.StatusHandler(channelManager)) // Status
 	// Test
-	router.GET("/test-all", rounter.AllHandler(config.CheckJwt, jwtToken, channelManager)) // Status
+	router.GET("/all", rounter.AllHandler(config.CheckJwt, jwtToken, channelManager)) // Status
 	// Start service
 	log.Printf("listen port: %s", config.Port)
 	router.Run(":" + config.Port)
