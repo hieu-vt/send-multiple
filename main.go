@@ -44,7 +44,7 @@ func main() {
 		}
 		subscribeRedis := rdb.PSubscribe(context.Background(), channel) // Subscribe all channel in redis pubsub
 		for msg := range subscribeRedis.Channel() {                     // Listen redis pubsub
-			go utils.SendData(channelManager, msg, prefix) // Send data to sse
+			utils.SendData(channelManager, msg, prefix) // Send data to sse
 		}
 	}()
 	// Heartbeat
@@ -52,7 +52,7 @@ func main() {
 		ticker := time.Tick(time.Duration(10000 * time.Millisecond)) // Interval 10s send heartbeat
 		for {
 			<-ticker
-			go utils.SendPing(channelManager, sseInstanceId) // Send heartbeat
+			utils.SendPing(channelManager, sseInstanceId) // Send heartbeat
 		}
 	}()
 	// Status
@@ -60,7 +60,7 @@ func main() {
 		ticker := time.Tick(time.Duration(20000 * time.Millisecond)) // Interval 10s send status
 		for {
 			<-ticker
-			go utils.SendStatus(channelManager, sseInstanceId, rdb, prefix) // Send status
+			utils.SendStatus(channelManager, sseInstanceId, rdb, prefix) // Send status
 		}
 	}()
 	// Init GIN rounter
