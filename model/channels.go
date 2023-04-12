@@ -141,8 +141,8 @@ func (m *ChannelManager) DeleteBroadcast(channelId string) {
 
 func (m *ChannelManager) Submit(channelId string, text string) {
 	// conver channel
-	if channelId == "v1:streaming:price" {
-		channelId = "v1:price"
+	if channelId == "v1:streaming:price" { // v1:streaming:price:NCM.ASX -> v1:price:NCM.ASX
+		channelId = strings.Replace(channelId, "streaming:", "", 1)
 	}
 	s := strings.Split(channelId, ",")
 	s = append(s, "ALL:ALL")
