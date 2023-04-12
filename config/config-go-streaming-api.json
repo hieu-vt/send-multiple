@@ -7,5 +7,5 @@
         "password": "7e49302b475067e7177aef16f015d753"
     },
     "prefix_channel": "",
-    "check_jwt": true
+    "check_jwt": false
 }

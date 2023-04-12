@@ -32,8 +32,6 @@ func SseHandler(checkJwt bool, jwtToken model.JWT, channelMan *model.ChannelMana
 		prefix, keys := utils.GetPrefixStreamingByGinContext(c)
 		sseId := uuid.New() // ID of sse connection
 		log.Printf("Connect SSE | %s | %s | %s | %s | %s", token["iss"], token["device_id"], sseId, prefix, keys)
-		channelMan.SseTotal += 1
-		channelMan.SseLive += 1
 		// Create new listener
 		listener := channelMan.OpenListener(prefix, keys)
 		// Wait for close
@@ -44,8 +42,6 @@ func SseHandler(checkJwt bool, jwtToken model.JWT, channelMan *model.ChannelMana
 			select {
 			case <-clientGone: // Close connection
 				log.Printf("Disconnect SSE | %s | %s | %s | %s | %s", token["iss"], token["device_id"], sseId, prefix, keys)
-				channelMan.SseClosed += 1
-				channelMan.SseLive -= 1
 				return false
 			case message := <-listener: // Send message
 				c.SSEvent("", message)

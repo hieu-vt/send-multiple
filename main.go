@@ -102,10 +102,6 @@ func main() {
 	router.GET("/ws//:p1/:p2/:p3/:p4", rounter.WebsocketHandler(config.CheckJwt, jwtToken, channelManager))        // Websocket
 	router.GET("/ws//:p1/:p2/:p3", rounter.WebsocketHandler(config.CheckJwt, jwtToken, channelManager))            // Websocket
 	router.GET("/ws/:p1/:p2", rounter.WebsocketHandler(config.CheckJwt, jwtToken, channelManager))                 // Sse
-	// Status
-	router.GET("/status", rounter.StatusHandler(channelManager)) // Status
-	// Test
-	router.GET("/all", rounter.AllHandler(config.CheckJwt, jwtToken, channelManager)) // Status
 	// Start service
 	log.Printf("listen port: %s", config.Port)
 	router.Run(":" + config.Port)

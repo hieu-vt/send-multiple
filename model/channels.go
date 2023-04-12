@@ -18,34 +18,20 @@ type Listener struct {
 }
 
 type ChannelManager struct {
-	channels     map[string]broadcast.Broadcaster
-	open         chan *Listener
-	close        chan *Listener
-	delete       chan string
-	messages     chan *Message
-	SseTotal     int64
-	SseClosed    int64
-	TotalMessage int64
-	SseLive      int64
-	WsTotal      int64
-	WsClosed     int64
-	WsLive       int64
+	channels map[string]broadcast.Broadcaster
+	open     chan *Listener
+	close    chan *Listener
+	delete   chan string
+	messages chan *Message
 }
 
 func NewChannelManager() *ChannelManager {
 	manager := &ChannelManager{
-		channels:     make(map[string]broadcast.Broadcaster),
-		open:         make(chan *Listener, 100),
-		close:        make(chan *Listener, 100),
-		delete:       make(chan string, 100),
-		messages:     make(chan *Message, 100),
-		SseTotal:     0,
-		SseClosed:    0,
-		TotalMessage: 0,
-		SseLive:      0,
-		WsTotal:      0,
-		WsClosed:     0,
-		WsLive:       0,
+		channels: make(map[string]broadcast.Broadcaster),
+		open:     make(chan *Listener, 100),
+		close:    make(chan *Listener, 100),
+		delete:   make(chan string, 100),
+		messages: make(chan *Message, 100),
 	}
 
 	go manager.run()
@@ -62,8 +48,9 @@ func (m *ChannelManager) run() {
 		case channelId := <-m.delete:
 			m.deleteBroadcast(channelId)
 		case message := <-m.messages:
-			m.TotalMessage += 1
-			m.channel(message.ChannelId).Submit(message.Text)
+			if m.isExistsChannel(message.ChannelId) {
+				m.channel(message.ChannelId).Submit(message.Text)
+			}
 		}
 	}
 }
@@ -85,6 +72,11 @@ func (m *ChannelManager) deleteBroadcast(channelId string) {
 		b.Close()
 		delete(m.channels, channelId)
 	}
+}
+
+func (m *ChannelManager) isExistsChannel(channelId string) bool {
+	_, ok := m.channels[channelId]
+	return ok
 }
 
 func (m *ChannelManager) channel(channelId string) broadcast.Broadcaster {
@@ -135,36 +127,37 @@ func (m *ChannelManager) CloseListener(prefix string, keys string, channel chan 
 	}
 }
 
-func (m *ChannelManager) DeleteBroadcast(channelId string) {
-	m.delete <- channelId
+func (m *ChannelManager) DeleteBroadcast(prefix string, keys string) {
+	// Each channel separate by ,
+	s := strings.Split(keys, ",")
+	for i := 0; i < len(s); i++ {
+		m.delete <- prefix + ":" + s[i]
+	}
 }
 
 func (m *ChannelManager) Submit(channelId string, text string) {
 	var arr []string
 	// conver channel
-	if strings.HasPrefix(channelId, "v1:streaming:interval") {
-		channelAppend := strings.Replace(channelId, "v1:streaming:interval", "v1:streaming", 1)
-		arr = append(arr, channelAppend)
-
-	}
-	if strings.HasPrefix(channelId, "v1:streaming:price") ||
-		strings.HasPrefix(channelId, "v1:streaming:quote") ||
-		strings.HasPrefix(channelId, "v1:streaming:depth") ||
-		strings.HasPrefix(channelId, "v1:streaming:trades") ||
-		strings.HasPrefix(channelId, "v1:streaming:interval_quote") ||
-		strings.HasPrefix(channelId, "v1:streaming:interval") ||
-		strings.HasPrefix(channelId, "v1:streaming:quote_mobile") {
-		channelId = strings.Replace(channelId, "streaming:", "", 1)
-	}
-	if strings.HasPrefix(channelId, "v1:streaming:interval_mobile") {
-		channelId = strings.Replace(channelId, "v1:streaming:interval_mobile", "v1:mobile-streaming", 1)
-	}
-	if strings.HasPrefix(channelId, "v1:streaming") {
-		channelId = strings.Replace(channelId, "v1:streaming", "v1:mobile-streaming", 1)
-	}
-
+	// if strings.HasPrefix(channelId, "v1:streaming:interval") {
+	// 	channelAppend := strings.Replace(channelId, "v1:streaming:interval", "v1:streaming", 1)
+	// 	arr = append(arr, channelAppend)
+	// }
+	// if strings.HasPrefix(channelId, "v1:streaming:price") ||
+	// 	strings.HasPrefix(channelId, "v1:streaming:quote") ||
+	// 	strings.HasPrefix(channelId, "v1:streaming:depth") ||
+	// 	strings.HasPrefix(channelId, "v1:streaming:trades") ||
+	// 	strings.HasPrefix(channelId, "v1:streaming:interval_quote") ||
+	// 	strings.HasPrefix(channelId, "v1:streaming:interval") ||
+	// 	strings.HasPrefix(channelId, "v1:streaming:quote_mobile") {
+	// 	channelId = strings.Replace(channelId, "streaming:", "", 1)
+	// }
+	// if strings.HasPrefix(channelId, "v1:streaming:interval_mobile") {
+	// 	channelId = strings.Replace(channelId, "v1:streaming:interval_mobile", "v1:mobile-streaming", 1)
+	// }
+	// if strings.HasPrefix(channelId, "v1:streaming") {
+	// 	channelId = strings.Replace(channelId, "v1:streaming", "v1:mobile-streaming", 1)
+	// }
 	arr = append(arr, channelId)
-	// arr = append(arr, "ALL:ALL")
 	// Send message to all listener
 	for i := 0; i < len(arr); i++ {
 		msg := &Message{

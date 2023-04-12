@@ -50,8 +50,6 @@ func WebsocketHandler(checkJwt bool, jwtToken model.JWT, channelMan *model.Chann
 		prefix, keys := utils.GetPrefixStreamingByGinContext(c)
 		sseId := uuid.New() // ID of sse connection
 		log.Printf("Connect Websocket | %s | %s | %s | %s | %s", token["iss"], token["device_id"], sseId, prefix, keys)
-		channelMan.WsTotal += 1
-		channelMan.WsLive += 1
 		// Create new listener
 		listener := channelMan.OpenListener(prefix, keys)
 		// Wait for close
@@ -67,8 +65,6 @@ func WebsocketHandler(checkJwt bool, jwtToken model.JWT, channelMan *model.Chann
 			}
 		}
 		log.Printf("Connect Websocket | %s | %s | %s | %s | %s", token["iss"], token["device_id"], sseId, prefix, keys)
-		channelMan.WsClosed += 1
-		channelMan.WsLive -= 1
 	}
 	return gin.HandlerFunc(fn)
 }
