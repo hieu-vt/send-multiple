@@ -145,7 +145,6 @@ func SendPing(channelManager *model.ChannelManager, sseInstanceId string) {
 
 func SendStatus(channelManager *model.ChannelManager, sseInstanceId string, rdb *redis.Client, prefix string) {
 	content := fmt.Sprintf("%v", channelManager.Channels)
-	log.Printf("Channels: %s", content)
 	path := "streaming:status"
 	if len(prefix) > 0 {
 		path = fmt.Sprintf("%v", channelManager)
