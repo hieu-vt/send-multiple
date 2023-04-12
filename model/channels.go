@@ -140,16 +140,35 @@ func (m *ChannelManager) DeleteBroadcast(channelId string) {
 }
 
 func (m *ChannelManager) Submit(channelId string, text string) {
+	var arr []string
 	// conver channel
-	if strings.HasPrefix(channelId, "v1:streaming:price") { // v1:streaming:price:NCM.ASX -> v1:price:NCM.ASX
+	if strings.HasPrefix(channelId, "v1:streaming:interval") {
+		channelAppend := strings.Replace(channelId, "v1:streaming:interval", "v1:streaming", 1)
+		arr = append(arr, channelAppend)
+
+	}
+	if strings.HasPrefix(channelId, "v1:streaming:price") ||
+		strings.HasPrefix(channelId, "v1:streaming:quote") ||
+		strings.HasPrefix(channelId, "v1:streaming:depth") ||
+		strings.HasPrefix(channelId, "v1:streaming:trades") ||
+		strings.HasPrefix(channelId, "v1:streaming:interval_quote") ||
+		strings.HasPrefix(channelId, "v1:streaming:interval") ||
+		strings.HasPrefix(channelId, "v1:streaming:quote_mobile") {
 		channelId = strings.Replace(channelId, "streaming:", "", 1)
 	}
-	s := strings.Split(channelId, ",")
-	s = append(s, "ALL:ALL")
+	if strings.HasPrefix(channelId, "v1:streaming:interval_mobile") {
+		channelId = strings.Replace(channelId, "v1:streaming:interval_mobile", "v1:mobile-streaming", 1)
+	}
+	if strings.HasPrefix(channelId, "v1:streaming") {
+		channelId = strings.Replace(channelId, "v1:streaming", "v1:mobile-streaming", 1)
+	}
+
+	arr = append(arr, channelId)
+	// arr = append(arr, "ALL:ALL")
 	// Send message to all listener
-	for i := 0; i < len(s); i++ {
+	for i := 0; i < len(arr); i++ {
 		msg := &Message{
-			ChannelId: s[i],
+			ChannelId: arr[i],
 			Text:      text,
 		}
 		m.messages <- msg
