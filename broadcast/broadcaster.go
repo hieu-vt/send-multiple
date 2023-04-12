@@ -33,6 +33,7 @@ type Broadcaster interface {
 
 func (b *broadcaster) broadcast(m interface{}) {
 	for ch := range b.outputs {
+		defer close(ch)
 		if ch != nil {
 			ch <- m
 		}
