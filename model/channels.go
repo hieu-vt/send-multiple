@@ -18,7 +18,7 @@ type Listener struct {
 }
 
 type ChannelManager struct {
-	Channels     map[string]broadcast.Broadcaster
+	channels     map[string]broadcast.Broadcaster
 	open         chan *Listener
 	close        chan *Listener
 	delete       chan string
@@ -34,7 +34,7 @@ type ChannelManager struct {
 
 func NewChannelManager() *ChannelManager {
 	manager := &ChannelManager{
-		Channels:     make(map[string]broadcast.Broadcaster),
+		channels:     make(map[string]broadcast.Broadcaster),
 		open:         make(chan *Listener, 100),
 		close:        make(chan *Listener, 100),
 		delete:       make(chan string, 100),
@@ -80,18 +80,18 @@ func (m *ChannelManager) deregister(listener *Listener) {
 }
 
 func (m *ChannelManager) deleteBroadcast(channelId string) {
-	b, ok := m.Channels[channelId]
+	b, ok := m.channels[channelId]
 	if ok {
 		b.Close()
-		delete(m.Channels, channelId)
+		delete(m.channels, channelId)
 	}
 }
 
 func (m *ChannelManager) channel(channelId string) broadcast.Broadcaster {
-	b, ok := m.Channels[channelId]
+	b, ok := m.channels[channelId]
 	if !ok {
 		b = broadcast.NewBroadcaster(10)
-		m.Channels[channelId] = b
+		m.channels[channelId] = b
 	}
 	return b
 }

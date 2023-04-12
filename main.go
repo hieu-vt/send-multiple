@@ -44,7 +44,7 @@ func main() {
 		}
 		subscribeRedis := rdb.PSubscribe(context.Background(), channel) // Subscribe all channel in redis pubsub
 		for msg := range subscribeRedis.Channel() {                     // Listen redis pubsub
-			go utils.SendData(channelManager, msg, prefix) // Send data to sse
+			utils.SendData(channelManager, msg, prefix) // Send data to sse
 		}
 	}()
 	// Heartbeat
