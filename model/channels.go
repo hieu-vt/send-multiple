@@ -140,6 +140,7 @@ func (m *ChannelManager) DeleteBroadcast(channelId string) {
 }
 
 func (m *ChannelManager) Submit(channelId string, text string) {
+	// conver channel
 	if channelId == "v1:streaming:price" {
 		channelId = "v1:price"
 	}
