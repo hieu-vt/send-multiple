@@ -141,7 +141,7 @@ func (m *ChannelManager) DeleteBroadcast(channelId string) {
 
 func (m *ChannelManager) Submit(channelId string, text string) {
 	if channelId == "v1:streaming:price" {
-		channelId = "v1/price"
+		channelId = "v1:price"
 	}
 	s := strings.Split(channelId, ",")
 	s = append(s, "ALL:ALL")
