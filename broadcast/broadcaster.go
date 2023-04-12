@@ -8,6 +8,8 @@ This code base on package https://github.com/dustin/go-broadcast
 */
 package broadcast
 
+import "time"
+
 type broadcaster struct {
 	input chan interface{}
 	reg   chan chan<- interface{}
@@ -33,9 +35,9 @@ type Broadcaster interface {
 
 func (b *broadcaster) broadcast(m interface{}) {
 	for ch := range b.outputs {
-		defer close(ch)
-		if ch != nil {
-			ch <- m
+		select {
+		case ch <- m:
+		case <-time.After(time.Millisecond):
 		}
 	}
 }
