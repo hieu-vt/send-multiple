@@ -18,7 +18,7 @@ type Listener struct {
 }
 
 type ChannelManager struct {
-	channels     map[string]broadcast.Broadcaster
+	Channels     map[string]broadcast.Broadcaster
 	open         chan *Listener
 	close        chan *Listener
 	delete       chan string
@@ -34,7 +34,7 @@ type ChannelManager struct {
 
 func NewChannelManager() *ChannelManager {
 	manager := &ChannelManager{
-		channels:     make(map[string]broadcast.Broadcaster),
+		Channels:     make(map[string]broadcast.Broadcaster),
 		open:         make(chan *Listener, 100),
 		close:        make(chan *Listener, 100),
 		delete:       make(chan string, 100),
@@ -80,34 +80,34 @@ func (m *ChannelManager) deregister(listener *Listener) {
 }
 
 func (m *ChannelManager) deleteBroadcast(channelId string) {
-	b, ok := m.channels[channelId]
+	b, ok := m.Channels[channelId]
 	if ok {
 		b.Close()
-		delete(m.channels, channelId)
+		delete(m.Channels, channelId)
 	}
 }
 
 func (m *ChannelManager) channel(channelId string) broadcast.Broadcaster {
-	b, ok := m.channels[channelId]
+	b, ok := m.Channels[channelId]
 	if !ok {
 		b = broadcast.NewBroadcaster(10)
-		m.channels[channelId] = b
+		m.Channels[channelId] = b
 	}
 	return b
 }
 
-func (m *ChannelManager) OpenListener(path string, channelLink string) chan interface{} {
+func (m *ChannelManager) OpenListener(prefix string, keys string) chan interface{} {
 	// Each channel separate by ,
-	s := strings.Split(channelLink, ",")
+	s := strings.Split(keys, ",")
 	// Add one listener for all channels
 	listener := make(chan interface{})
 	for i := 0; i < len(s); i++ {
 		m.open <- &Listener{
-			ChannelId: path + ":" + s[i],
+			ChannelId: prefix + ":" + s[i],
 			Chan:      listener,
 		}
 	}
-	if path == "streaming" && channelLink == "status" {
+	if prefix == "streaming" && keys == "status" {
 		log.Printf("Bypass PING msg to status link")
 	} else {
 		// Add Ping channel to every listener
@@ -119,12 +119,12 @@ func (m *ChannelManager) OpenListener(path string, channelLink string) chan inte
 	return listener
 }
 
-func (m *ChannelManager) CloseListener(path string, channelLink string, channel chan interface{}) {
+func (m *ChannelManager) CloseListener(prefix string, keys string, channel chan interface{}) {
 	// Each channel separate by ,
-	s := strings.Split(channelLink, ",")
+	s := strings.Split(keys, ",")
 	for i := 0; i < len(s); i++ {
 		m.close <- &Listener{
-			ChannelId: path + ":" + s[i],
+			ChannelId: prefix + ":" + s[i],
 			Chan:      channel,
 		}
 	}
@@ -140,6 +140,9 @@ func (m *ChannelManager) DeleteBroadcast(channelId string) {
 }
 
 func (m *ChannelManager) Submit(channelId string, text string) {
+	if channelId == "v1:streaming:price" {
+		channelId = "v1/price"
+	}
 	s := strings.Split(channelId, ",")
 	s = append(s, "ALL:ALL")
 	// Send message to all listener
