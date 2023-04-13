@@ -1,10 +1,9 @@
 package model
 
 import (
+	"go-streaming/broadcast"
 	"log"
 	"strings"
-
-	"go-streaming/broadcast"
 )
 
 type Message struct {
@@ -38,7 +37,7 @@ func NewChannelManager() *ChannelManager {
 	go func() {
 		defer func() {
 			if r := recover(); r != nil {
-				log.Printf("Recover panic, recreate Channel Manager")
+				log.Printf("Recover panic, recreate Channel Manager", r)
 				manager = NewChannelManager()
 			}
 		}()

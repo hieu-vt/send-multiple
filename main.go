@@ -1,23 +1,38 @@
 package main
 
 import (
-	"context"
-	"fmt"
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+	"github.com/penglongli/gin-metrics/ginmetrics"
+	"go-streaming/engine"
 	"go-streaming/model"
 	"go-streaming/rounter"
 	"go-streaming/utils"
 	"log"
+	"math/rand"
 	"time"
-
-	"github.com/gin-gonic/gin"
-	"github.com/go-redis/redis/v8"
-	"github.com/google/uuid"
-	"github.com/penglongli/gin-metrics/ginmetrics"
 )
 
 var jwtToken model.JWT
 var sseInstanceId string = uuid.New().String() // uuid of see service
 var channelManager *model.ChannelManager       // channel manager
+
+func RandomSymbol() string {
+	rand.Seed(time.Now().UnixNano())
+
+	// Define the alphabet
+	alphabet := "ABC"
+
+	// Shuffle the alphabet
+	runes := []rune(alphabet)
+	rand.Shuffle(len(runes), func(i, j int) {
+		runes[i], runes[j] = runes[j], runes[i]
+	})
+
+	// Create a string with the first three characters
+	str := string(runes[:3])
+	return "ASX:" + str
+}
 
 func main() {
 	log.SetFlags(log.Ldate | log.Lmsgprefix | log.Ltime | log.Lshortfile)
@@ -29,40 +44,38 @@ func main() {
 
 	log.Printf("Redis enpoint: %s", config.Redis.Host)
 	channelManager = model.NewChannelManager() // Init channel manager
-	prefix := config.PrefixChannel
+	channelEngine := engine.NewChannelEngine()
 	// Init redis connection
-	rdb := redis.NewClient(&redis.Options{
-		Addr:     config.Redis.Host + ":" + config.Redis.Port, // Address or redis. Should separate redis to improve performance
-		Password: config.Redis.Password,                       // Password
-		DB:       config.Redis.Database,                       // Database
-	})
+	//rdb := redis.NewClient(&redis.Options{
+	//	Addr:     config.Redis.Host + ":" + config.Redis.Port, // Address or redis. Should separate redis to improve performance
+	//	Password: config.Redis.Password,                       // Password
+	//	DB:       config.Redis.Database,                       // Database
+	//})
 	// Get message from redis pub/sub
 	go func() {
-		channel := "*"
-		if len(prefix) > 0 {
-			channel = fmt.Sprintf("%s:*", prefix)
-		}
-		subscribeRedis := rdb.PSubscribe(context.Background(), channel) // Subscribe all channel in redis pubsub
-		for msg := range subscribeRedis.Channel() {                     // Listen redis pubsub
-			utils.SendData(channelManager, msg, prefix) // Send data to sse
-		}
-	}()
-	// Heartbeat
-	go func() {
-		ticker := time.Tick(time.Duration(10000 * time.Millisecond)) // Interval 10s send heartbeat
 		for {
-			<-ticker
-			utils.SendPing(channelManager, sseInstanceId) // Send heartbeat
+			time.Sleep(time.Second)
+			cId := RandomSymbol()
+			log.Println("ChannelId redis:", cId)
+			channelEngine.Send(cId, engine.Message{Text: "Hello subscrible", ChannelId: cId})
 		}
 	}()
-	// Status
-	go func() {
-		ticker := time.Tick(time.Duration(20000 * time.Millisecond)) // Interval 10s send status
-		for {
-			<-ticker
-			utils.SendStatus(channelManager.Count, sseInstanceId, rdb, prefix) // Send status
-		}
-	}()
+	//// Heartbeat
+	//go func() {
+	//	ticker := time.Tick(time.Duration(10000 * time.Millisecond)) // Interval 10s send heartbeat
+	//	for {
+	//		<-ticker
+	//		utils.SendPing(channelManager, sseInstanceId) // Send heartbeat
+	//	}
+	//}()
+	//// Status
+	//go func() {
+	//	ticker := time.Tick(time.Duration(20000 * time.Millisecond)) // Interval 10s send status
+	//	for {
+	//		<-ticker
+	//		utils.SendStatus(channelManager.Count, sseInstanceId, rdb, prefix) // Send status
+	//	}
+	//}()
 	// Init GIN rounter
 	router := gin.New()
 	// Metris
@@ -85,11 +98,11 @@ func main() {
 		return ""
 	}))
 	// Generality SSE
-	router.GET("/:p1/:p2/:p3/:p4/:p5/:p6", rounter.SseHandler(config.CheckJwt, jwtToken, channelManager)) // Sse
-	router.GET("/:p1/:p2/:p3/:p4/:p5", rounter.SseHandler(config.CheckJwt, jwtToken, channelManager))     // Sse
-	router.GET("/:p1/:p2/:p3/:p4", rounter.SseHandler(config.CheckJwt, jwtToken, channelManager))         // Sse
-	router.GET("/:p1/:p2/:p3", rounter.SseHandler(config.CheckJwt, jwtToken, channelManager))             // Sse
-	router.GET("/:p1/:p2", rounter.SseHandler(config.CheckJwt, jwtToken, channelManager))                 // Sse
+	//router.GET("/:p1/:p2/:p3/:p4/:p5/:p6", rounter.SseHandler(config.CheckJwt, jwtToken, channelManager)) // Sse
+	//router.GET("/:p1/:p2/:p3/:p4/:p5", rounter.SseHandler(config.CheckJwt, jwtToken, channelManager))     // Sse
+	//router.GET("/:p1/:p2/:p3/:p4", rounter.SseHandler(config.CheckJwt, jwtToken, channelManager))         // Sse
+	//router.GET("/:p1/:p2/:p3", rounter.SseHandler(config.CheckJwt, jwtToken, channelManager))             // Sse
+	router.GET("/:p1/:p2", rounter.SseHandler(channelEngine)) // Sse
 	// Generality Options
 	router.OPTIONS("/:p1/:p2/:p3/:p4/:p5/p6", rounter.Options) // Options
 	router.OPTIONS("/:p1/:p2/:p3/:p4/:p5", rounter.Options)    // Options

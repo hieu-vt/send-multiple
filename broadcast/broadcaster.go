@@ -69,8 +69,6 @@ func NewBroadcaster(buflen int) Broadcaster {
 		outputs: make(map[chan<- interface{}]bool),
 	}
 
-	go b.run()
-
 	return b
 }
 
