@@ -143,11 +143,11 @@ func SendPing(channelManager *model.ChannelManager, sseInstanceId string) {
 	channelManager.Submit("PING", fmt.Sprintf(" %s", string(s)))
 }
 
-func SendStatus(channelManager *model.ChannelManager, sseInstanceId string, rdb *redis.Client, prefix string) {
-	content := ""
+func SendStatus(count int, sseInstanceId string, rdb *redis.Client, prefix string) {
+	content := fmt.Sprintf("%v", count)
 	path := "streaming:status"
 	if len(prefix) > 0 {
-		path = fmt.Sprintf("%v", channelManager)
+		path = fmt.Sprintf("%s:%s", prefix, path)
 	}
 	rdb.Publish(context.Background(), path, content).Err()
 }

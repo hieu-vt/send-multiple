@@ -60,7 +60,7 @@ func main() {
 		ticker := time.Tick(time.Duration(20000 * time.Millisecond)) // Interval 10s send status
 		for {
 			<-ticker
-			utils.SendStatus(channelManager, sseInstanceId, rdb, prefix) // Send status
+			utils.SendStatus(channelManager.Count, sseInstanceId, rdb, prefix) // Send status
 		}
 	}()
 	// Init GIN rounter
@@ -103,6 +103,7 @@ func main() {
 	router.GET("/ws//:p1/:p2/:p3", rounter.WebsocketHandler(config.CheckJwt, jwtToken, channelManager))            // Websocket
 	router.GET("/ws/:p1/:p2", rounter.WebsocketHandler(config.CheckJwt, jwtToken, channelManager))                 // Sse
 	// Start service
+	router.GET("/status", rounter.StatusHandler(channelManager)) // Sse
 	log.Printf("listen port: %s", config.Port)
 	router.Run(":" + config.Port)
 }

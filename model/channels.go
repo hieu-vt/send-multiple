@@ -23,6 +23,7 @@ type ChannelManager struct {
 	close    chan *Listener
 	delete   chan string
 	messages chan *Message
+	Count    int
 }
 
 func NewChannelManager() *ChannelManager {
@@ -32,9 +33,17 @@ func NewChannelManager() *ChannelManager {
 		close:    make(chan *Listener, 100),
 		delete:   make(chan string, 100),
 		messages: make(chan *Message, 100),
+		Count:    0,
 	}
-
-	go manager.run()
+	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				log.Printf("Recover panic, recreate Channel Manager")
+				manager = NewChannelManager()
+			}
+		}()
+		manager.run()
+	}()
 	return manager
 }
 
@@ -49,18 +58,18 @@ func (m *ChannelManager) run() {
 			m.deleteBroadcast(channelId)
 		case message := <-m.messages:
 			if m.isExistsChannel(message.ChannelId) {
-				m.channel(message.ChannelId).Submit(message.Text)
+				m.getChannel(message.ChannelId).Submit(message.Text)
 			}
 		}
 	}
 }
 
 func (m *ChannelManager) register(listener *Listener) {
-	m.channel(listener.ChannelId).Register(listener.Chan)
+	m.getChannel(listener.ChannelId).Register(listener.Chan)
 }
 
 func (m *ChannelManager) deregister(listener *Listener) {
-	m.channel(listener.ChannelId).Unregister(listener.Chan)
+	m.getChannel(listener.ChannelId).Unregister(listener.Chan)
 	if !IsClosed(listener.Chan) {
 		close(listener.Chan)
 	}
@@ -79,7 +88,7 @@ func (m *ChannelManager) isExistsChannel(channelId string) bool {
 	return ok
 }
 
-func (m *ChannelManager) channel(channelId string) broadcast.Broadcaster {
+func (m *ChannelManager) getChannel(channelId string) broadcast.Broadcaster {
 	b, ok := m.channels[channelId]
 	if !ok {
 		b = broadcast.NewBroadcaster(10)
@@ -89,6 +98,7 @@ func (m *ChannelManager) channel(channelId string) broadcast.Broadcaster {
 }
 
 func (m *ChannelManager) OpenListener(prefix string, keys string) chan interface{} {
+	m.Count += 1
 	// Each channel separate by ,
 	s := strings.Split(keys, ",")
 	// Add one listener for all channels
@@ -112,6 +122,7 @@ func (m *ChannelManager) OpenListener(prefix string, keys string) chan interface
 }
 
 func (m *ChannelManager) CloseListener(prefix string, keys string, channel chan interface{}) {
+	m.Count -= 1
 	// Each channel separate by ,
 	s := strings.Split(keys, ",")
 	for i := 0; i < len(s); i++ {
@@ -137,26 +148,6 @@ func (m *ChannelManager) DeleteBroadcast(prefix string, keys string) {
 
 func (m *ChannelManager) Submit(channelId string, text string) {
 	var arr []string
-	// conver channel
-	// if strings.HasPrefix(channelId, "v1:streaming:interval") {
-	// 	channelAppend := strings.Replace(channelId, "v1:streaming:interval", "v1:streaming", 1)
-	// 	arr = append(arr, channelAppend)
-	// }
-	// if strings.HasPrefix(channelId, "v1:streaming:price") ||
-	// 	strings.HasPrefix(channelId, "v1:streaming:quote") ||
-	// 	strings.HasPrefix(channelId, "v1:streaming:depth") ||
-	// 	strings.HasPrefix(channelId, "v1:streaming:trades") ||
-	// 	strings.HasPrefix(channelId, "v1:streaming:interval_quote") ||
-	// 	strings.HasPrefix(channelId, "v1:streaming:interval") ||
-	// 	strings.HasPrefix(channelId, "v1:streaming:quote_mobile") {
-	// 	channelId = strings.Replace(channelId, "streaming:", "", 1)
-	// }
-	// if strings.HasPrefix(channelId, "v1:streaming:interval_mobile") {
-	// 	channelId = strings.Replace(channelId, "v1:streaming:interval_mobile", "v1:mobile-streaming", 1)
-	// }
-	// if strings.HasPrefix(channelId, "v1:streaming") {
-	// 	channelId = strings.Replace(channelId, "v1:streaming", "v1:mobile-streaming", 1)
-	// }
 	arr = append(arr, channelId)
 	// Send message to all listener
 	for i := 0; i < len(arr); i++ {
