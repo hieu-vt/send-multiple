@@ -29,7 +29,7 @@ func (ce *ChannelEngine) Listener(channelId string) chan Message {
 	eCh, ok := ce.manager[channelId]
 
 	if ok {
-		_ = append(eCh, ch)
+		ce.manager[channelId] = append(eCh, ch)
 	} else {
 		ce.manager[channelId] = []chan Message{
 			ch,
@@ -47,7 +47,9 @@ func (ce *ChannelEngine) Send(channelId string, message Message) {
 	chs, ok := ce.manager[channelId]
 	if ok {
 		for i := 0; i < len(chs); i++ {
+			//go func(mess Message, index int) {
 			chs[i] <- message
+			//}(message, i)
 		}
 	}
 }

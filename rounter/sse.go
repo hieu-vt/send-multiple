@@ -38,7 +38,6 @@ func SseHandler(channelEngine *engine.ChannelEngine) gin.HandlerFunc {
 
 		s := strings.Split(keys, ",")
 		// Wait for close
-		clientGone := c.Request.Context().Done()
 
 		for i := 0; i < len(s); i++ {
 			go func(i int, lisChan chan interface{}) {
@@ -56,6 +55,8 @@ func SseHandler(channelEngine *engine.ChannelEngine) gin.HandlerFunc {
 				//}
 			}(i, listenerCh)
 		}
+
+		clientGone := c.Request.Context().Done()
 
 		// Keep connection
 		c.Stream(func(w io.Writer) bool {

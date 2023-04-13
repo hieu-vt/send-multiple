@@ -53,8 +53,119 @@ func main() {
 	//})
 	// Get message from redis pub/sub
 	go func() {
+		time.Sleep(time.Second * 5)
+
 		for {
-			time.Sleep(time.Second)
+			time.Sleep(time.Millisecond)
+			cId := RandomSymbol()
+			log.Println("ChannelId redis:", cId)
+			channelEngine.Send(cId, engine.Message{Text: "Hello subscrible", ChannelId: cId})
+		}
+	}()
+
+	go func() {
+		time.Sleep(time.Second * 5)
+
+		for {
+			time.Sleep(time.Millisecond)
+			cId := RandomSymbol()
+			log.Println("ChannelId redis:", cId)
+			channelEngine.Send(cId, engine.Message{Text: "Hello subscrible", ChannelId: cId})
+		}
+	}()
+
+	go func() {
+		time.Sleep(time.Second * 5)
+
+		for {
+			time.Sleep(time.Millisecond)
+			cId := RandomSymbol()
+			log.Println("ChannelId redis:", cId)
+			channelEngine.Send(cId, engine.Message{Text: "Hello subscrible", ChannelId: cId})
+		}
+	}()
+	go func() {
+		time.Sleep(time.Second * 5)
+
+		for {
+			time.Sleep(time.Millisecond)
+			cId := RandomSymbol()
+			log.Println("ChannelId redis:", cId)
+			channelEngine.Send(cId, engine.Message{Text: "Hello subscrible", ChannelId: cId})
+		}
+	}()
+	go func() {
+		time.Sleep(time.Second * 5)
+
+		for {
+			time.Sleep(time.Millisecond)
+			cId := RandomSymbol()
+			log.Println("ChannelId redis:", cId)
+			channelEngine.Send(cId, engine.Message{Text: "Hello subscrible", ChannelId: cId})
+		}
+	}()
+	go func() {
+		time.Sleep(time.Second * 5)
+
+		for {
+			time.Sleep(time.Millisecond)
+			cId := RandomSymbol()
+			log.Println("ChannelId redis:", cId)
+			channelEngine.Send(cId, engine.Message{Text: "Hello subscrible", ChannelId: cId})
+		}
+	}()
+	go func() {
+		time.Sleep(time.Second * 5)
+
+		for {
+			time.Sleep(time.Millisecond)
+			cId := RandomSymbol()
+			log.Println("ChannelId redis:", cId)
+			channelEngine.Send(cId, engine.Message{Text: "Hello subscrible", ChannelId: cId})
+		}
+	}()
+	go func() {
+		time.Sleep(time.Second * 5)
+
+		for {
+			time.Sleep(time.Millisecond)
+			cId := RandomSymbol()
+			log.Println("ChannelId redis:", cId)
+			channelEngine.Send(cId, engine.Message{Text: "Hello subscrible", ChannelId: cId})
+		}
+	}()
+	go func() {
+		time.Sleep(time.Second * 5)
+
+		for {
+			time.Sleep(time.Millisecond)
+			cId := RandomSymbol()
+			log.Println("ChannelId redis:", cId)
+			channelEngine.Send(cId, engine.Message{Text: "Hello subscrible", ChannelId: cId})
+		}
+	}()
+	go func() {
+		time.Sleep(time.Second * 5)
+		for {
+			time.Sleep(time.Millisecond)
+			cId := RandomSymbol()
+			log.Println("ChannelId redis:", cId)
+			channelEngine.Send(cId, engine.Message{Text: "Hello subscrible", ChannelId: cId})
+		}
+	}()
+	go func() {
+		time.Sleep(time.Second * 5)
+		for {
+			time.Sleep(time.Millisecond)
+			cId := RandomSymbol()
+			log.Println("ChannelId redis:", cId)
+			channelEngine.Send(cId, engine.Message{Text: "Hello subscrible", ChannelId: cId})
+		}
+	}()
+	go func() {
+		time.Sleep(time.Second * 5)
+		for {
+			time.Sleep(time.Millisecond)
 			cId := RandomSymbol()
 			log.Println("ChannelId redis:", cId)
 			channelEngine.Send(cId, engine.Message{Text: "Hello subscrible", ChannelId: cId})
@@ -62,7 +173,7 @@ func main() {
 	}()
 	//// Heartbeat
 	//go func() {
-	//	ticker := time.Tick(time.Duration(10000 * time.Millisecond)) // Interval 10s send heartbeat
+	//	ticker := time.Tick(time.Duration(10000 * time.Millisecond/100)) // Interval 10s send heartbeat
 	//	for {
 	//		<-ticker
 	//		utils.SendPing(channelManager, sseInstanceId) // Send heartbeat
@@ -70,7 +181,7 @@ func main() {
 	//}()
 	//// Status
 	//go func() {
-	//	ticker := time.Tick(time.Duration(20000 * time.Millisecond)) // Interval 10s send status
+	//	ticker := time.Tick(time.Duration(20000 * time.Millisecond/100)) // Interval 10s send status
 	//	for {
 	//		<-ticker
 	//		utils.SendStatus(channelManager.Count, sseInstanceId, rdb, prefix) // Send status
