@@ -15,7 +15,6 @@ import (
 func SseHandler(channelEngine *engine.ChannelEngine) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// validate token
-		stopChan := make(chan bool, 1)
 		var token jwt.MapClaims
 		//if checkJwt {
 		//	tokenOutput, jwt, err := jwtToken.Validate(c)
@@ -34,26 +33,36 @@ func SseHandler(channelEngine *engine.ChannelEngine) gin.HandlerFunc {
 		sseId := uuid.New() // ID of sse connection
 		log.Printf("Connect SSE | %s | %s | %s | %s | %s", token["iss"], token["device_id"], sseId, prefix, keys)
 		// Create new listener
-		listenerCh := make(chan interface{})
 
 		s := strings.Split(keys, ",")
 		// Wait for close
 
+		stopChan := make(chan bool, len(s))
+		listenerCh := make(chan interface{}, len(s))
+
+		defer close(stopChan)
+
 		for i := 0; i < len(s); i++ {
-			go func(i int, lisChan chan interface{}) {
-				channelId := prefix + ":" + s[i]
+			go func(index int, lisChan chan interface{}, stopCh chan bool) {
+				channelId := prefix + ":" + s[index]
 				log.Println("ChannelId: ", channelId)
 				ch := channelEngine.Listener(channelId)
+
 				if ch != nil {
-					for mess := range ch {
-						log.Println("mess: ", mess)
-						lisChan <- mess
+					for {
+						select {
+						case mess := <-ch:
+							lisChan <- mess
+						case isStop := <-stopCh:
+							if isStop {
+								channelEngine.DeleteChildChannel(ch, channelId)
+							}
+						}
 					}
+
 				}
-				//if <-stopChan {
-				//	channelEngine.DeleteChildChannel(c, cId)
-				//}
-			}(i, listenerCh)
+
+			}(i, listenerCh, stopChan)
 		}
 
 		clientGone := c.Request.Context().Done()
@@ -63,7 +72,9 @@ func SseHandler(channelEngine *engine.ChannelEngine) gin.HandlerFunc {
 			select {
 			case <-clientGone: // Close connection
 				log.Printf("Disconnect SSE | %s | %s | %s | %s | %s", token["iss"], token["device_id"], sseId, prefix, keys)
-				stopChan <- true
+				for i := 0; i < len(s); i++ {
+					stopChan <- true
+				}
 				return false
 			case message := <-listenerCh: // Send message
 				log.Println("message: ", message)

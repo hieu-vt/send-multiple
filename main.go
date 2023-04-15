@@ -1,37 +1,53 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/nats-io/nats.go"
 	"github.com/penglongli/gin-metrics/ginmetrics"
 	"go-streaming/engine"
 	"go-streaming/model"
 	"go-streaming/rounter"
 	"go-streaming/utils"
 	"log"
-	"math/rand"
 	"time"
 )
 
 var jwtToken model.JWT
 var sseInstanceId string = uuid.New().String() // uuid of see service
-var channelManager *model.ChannelManager       // channel manager
+var channelManager *model.ChannelManager
 
-func RandomSymbol() string {
-	rand.Seed(time.Now().UnixNano())
+// channel manager
+type Quote struct {
+	OpenPrice  float64
+	ClosePrice float64
+	LastPrice  float64
+	QuoteVol   int
+}
 
-	// Define the alphabet
-	alphabet := "ABC"
+type Message struct {
+	Symbol string
+	Data   Quote
+}
 
-	// Shuffle the alphabet
-	runes := []rune(alphabet)
-	rand.Shuffle(len(runes), func(i, j int) {
-		runes[i], runes[j] = runes[j], runes[i]
-	})
+func setupConnOptions(opts []nats.Option) []nats.Option {
+	totalWait := 10 * time.Minute
+	reconnectDelay := time.Second
 
-	// Create a string with the first three characters
-	str := string(runes[:3])
-	return "ASX:" + str
+	opts = append(opts, nats.ReconnectWait(reconnectDelay))
+	opts = append(opts, nats.MaxReconnects(int(totalWait/reconnectDelay)))
+	opts = append(opts, nats.DisconnectErrHandler(func(nc *nats.Conn, err error) {
+		log.Printf("Disconnected due to:%s, will attempt reconnects for %.0fm", err, totalWait.Minutes())
+	}))
+	opts = append(opts, nats.ReconnectHandler(func(nc *nats.Conn) {
+		log.Printf("Reconnected [%s]", nc.ConnectedUrl())
+	}))
+	opts = append(opts, nats.ClosedHandler(func(nc *nats.Conn) {
+		log.Printf("Exiting: %v", nc.LastError())
+	}))
+	return opts
 }
 
 func main() {
@@ -51,126 +67,20 @@ func main() {
 	//	Password: config.Redis.Password,                       // Password
 	//	DB:       config.Redis.Database,                       // Database
 	//})
-	// Get message from redis pub/sub
-	go func() {
-		time.Sleep(time.Second * 5)
-
-		for {
-			time.Sleep(time.Millisecond)
-			cId := RandomSymbol()
-			log.Println("ChannelId redis:", cId)
-			channelEngine.Send(cId, engine.Message{Text: "Hello subscrible", ChannelId: cId})
-		}
-	}()
+	// Get message from nats pub/sub
+	log.Printf("Start subscrible %s\n", nats.DefaultURL)
+	nc, _ := nats.Connect(nats.DefaultURL, setupConnOptions([]nats.Option{})...)
 
 	go func() {
-		time.Sleep(time.Second * 5)
+		nc.Subscribe("price_streaming", func(m *nats.Msg) {
+			var data Message
+			json.Unmarshal(m.Data, &data)
+			fmt.Printf("Received a message: %s\n", data.Symbol)
 
-		for {
-			time.Sleep(time.Millisecond)
-			cId := RandomSymbol()
-			log.Println("ChannelId redis:", cId)
-			channelEngine.Send(cId, engine.Message{Text: "Hello subscrible", ChannelId: cId})
-		}
+			channelEngine.Send(data.Symbol, engine.Message{Data: string(m.Data)})
+		})
 	}()
 
-	go func() {
-		time.Sleep(time.Second * 5)
-
-		for {
-			time.Sleep(time.Millisecond)
-			cId := RandomSymbol()
-			log.Println("ChannelId redis:", cId)
-			channelEngine.Send(cId, engine.Message{Text: "Hello subscrible", ChannelId: cId})
-		}
-	}()
-	go func() {
-		time.Sleep(time.Second * 5)
-
-		for {
-			time.Sleep(time.Millisecond)
-			cId := RandomSymbol()
-			log.Println("ChannelId redis:", cId)
-			channelEngine.Send(cId, engine.Message{Text: "Hello subscrible", ChannelId: cId})
-		}
-	}()
-	go func() {
-		time.Sleep(time.Second * 5)
-
-		for {
-			time.Sleep(time.Millisecond)
-			cId := RandomSymbol()
-			log.Println("ChannelId redis:", cId)
-			channelEngine.Send(cId, engine.Message{Text: "Hello subscrible", ChannelId: cId})
-		}
-	}()
-	go func() {
-		time.Sleep(time.Second * 5)
-
-		for {
-			time.Sleep(time.Millisecond)
-			cId := RandomSymbol()
-			log.Println("ChannelId redis:", cId)
-			channelEngine.Send(cId, engine.Message{Text: "Hello subscrible", ChannelId: cId})
-		}
-	}()
-	go func() {
-		time.Sleep(time.Second * 5)
-
-		for {
-			time.Sleep(time.Millisecond)
-			cId := RandomSymbol()
-			log.Println("ChannelId redis:", cId)
-			channelEngine.Send(cId, engine.Message{Text: "Hello subscrible", ChannelId: cId})
-		}
-	}()
-	go func() {
-		time.Sleep(time.Second * 5)
-
-		for {
-			time.Sleep(time.Millisecond)
-			cId := RandomSymbol()
-			log.Println("ChannelId redis:", cId)
-			channelEngine.Send(cId, engine.Message{Text: "Hello subscrible", ChannelId: cId})
-		}
-	}()
-	go func() {
-		time.Sleep(time.Second * 5)
-
-		for {
-			time.Sleep(time.Millisecond)
-			cId := RandomSymbol()
-			log.Println("ChannelId redis:", cId)
-			channelEngine.Send(cId, engine.Message{Text: "Hello subscrible", ChannelId: cId})
-		}
-	}()
-	go func() {
-		time.Sleep(time.Second * 5)
-		for {
-			time.Sleep(time.Millisecond)
-			cId := RandomSymbol()
-			log.Println("ChannelId redis:", cId)
-			channelEngine.Send(cId, engine.Message{Text: "Hello subscrible", ChannelId: cId})
-		}
-	}()
-	go func() {
-		time.Sleep(time.Second * 5)
-		for {
-			time.Sleep(time.Millisecond)
-			cId := RandomSymbol()
-			log.Println("ChannelId redis:", cId)
-			channelEngine.Send(cId, engine.Message{Text: "Hello subscrible", ChannelId: cId})
-		}
-	}()
-	go func() {
-		time.Sleep(time.Second * 5)
-		for {
-			time.Sleep(time.Millisecond)
-			cId := RandomSymbol()
-			log.Println("ChannelId redis:", cId)
-			channelEngine.Send(cId, engine.Message{Text: "Hello subscrible", ChannelId: cId})
-		}
-	}()
 	//// Heartbeat
 	//go func() {
 	//	ticker := time.Tick(time.Duration(10000 * time.Millisecond/100)) // Interval 10s send heartbeat

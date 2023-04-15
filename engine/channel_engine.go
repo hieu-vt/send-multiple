@@ -6,8 +6,7 @@ import (
 )
 
 type Message struct {
-	Text      string
-	ChannelId string
+	Data string `json:"data"`
 }
 
 type ChannelEngine struct {
@@ -47,22 +46,32 @@ func (ce *ChannelEngine) Send(channelId string, message Message) {
 	chs, ok := ce.manager[channelId]
 	if ok {
 		for i := 0; i < len(chs); i++ {
-			//go func(mess Message, index int) {
-			chs[i] <- message
-			//}(message, i)
+			go func(mess Message, index int) {
+				chs[index] <- message
+			}(message, i)
 		}
 	}
 }
 
 // delete chan when disconnect sse
-func (ce *ChannelEngine) DeleteChildChannel(ch <-chan Message, channelId string) {
+func (ce *ChannelEngine) DeleteChildChannel(ch chan Message, channelId string) {
+	ce.locker.Lock()
+
 	chs, ok := ce.manager[channelId]
 	if ok {
 		for i := 0; i < len(chs); i++ {
 			if chs[i] == ch {
 				chs = append(chs[:i], chs[i+1:]...)
+				close(ch)
 				break
 			}
 		}
 	}
+
+	log.Println("Destroy channel: ", channelId)
+	ce.locker.Unlock()
+}
+
+func (ce *ChannelEngine) Run() {
+
 }
