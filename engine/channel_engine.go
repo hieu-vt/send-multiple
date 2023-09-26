@@ -47,6 +47,11 @@ func (ce *ChannelEngine) Send(channelId string, message Message) {
 	if ok {
 		for i := 0; i < len(chs); i++ {
 			go func(mess Message, index int) {
+				defer func() {
+					if err := recover(); err != nil {
+						log.Println(err)
+					}
+				}()
 				chs[index] <- message
 			}(message, i)
 		}
